@@ -17,7 +17,7 @@ class MastodonClientConfig {
     private static final Logger logger = LoggerFactory.getLogger(MastodonClientConfig.class);
 
     @Bean
-    RestClientHttpServiceGroupConfigurer groupConfigurer(MastodonProperties mastodonProperties) {
+    RestClientHttpServiceGroupConfigurer groupMastodonConfigurer(MastodonProperties mastodonProperties) {
         return groups -> groups.forEachClient((group, builder) -> builder
                 .baseUrl(UriComponentsBuilder.newInstance()
                         .scheme(mastodonProperties.scheme())

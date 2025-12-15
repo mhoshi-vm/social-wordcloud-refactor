@@ -14,6 +14,6 @@ interface MastodonClient {
     List<MastodonTimelinesResponse> getMastodonTimeLineResponses(
             @PathVariable String hashtag,
             @RequestParam Integer limit,
-            @RequestParam(name = "sinceId") String sinceId,
+            @RequestParam(name = "since_id") String sinceId,
             @RequestParam(name = "max_id", required = false) String maxId);
 }
