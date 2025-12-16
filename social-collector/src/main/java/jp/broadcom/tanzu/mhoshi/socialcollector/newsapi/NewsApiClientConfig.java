@@ -57,10 +57,7 @@ class NewsApiClientConfig {
             NewsApiResponse newsApiResponse = newsApiList(newsApiClient, newsApiProperties);
             if (!newsApiResponse.articles().isEmpty()) {
                 this.newsApiFrom = newsApiResponse.articles().getFirst().publishedAt();
-                OffsetStore offsetStore = new OffsetStore();
-                offsetStore.setCollector(CollectorType.MASTODON);
-                offsetStore.setPointer(this.newsApiFrom);
-                offsetStoreRepository.save(offsetStore);
+                offsetStoreRepository.save(new OffsetStore(CollectorType.MASTODON, this.newsApiFrom));
             }
             return newsApiResponse;
         };

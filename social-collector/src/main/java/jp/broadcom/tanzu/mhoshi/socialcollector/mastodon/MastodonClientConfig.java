@@ -38,9 +38,7 @@ class MastodonClientConfig {
                         .port(mastodonProperties.port())
                         .build()
                         .toUriString())
-                .defaultHeaders(httpHeaders -> {
-                    httpHeaders.set("Authorization", "Bearer " + mastodonProperties.token());
-                })
+                .defaultHeaders(httpHeaders -> httpHeaders.set("Authorization", "Bearer " + mastodonProperties.token()))
                 .requestInterceptor(((request, body, execution) -> {
                     logger.info("Intercepting request: {}", request.getURI());
                     logger.info("Headers: {}", request.getHeaders());
@@ -57,10 +55,7 @@ class MastodonClientConfig {
             List<MastodonTimelinesResponse> mastodonTimelinesResponses = mastodonTimelinesResponses(mastodonClient, mastodonProperties.hashTag(), mastodonProperties.pollingLimit(), sinceId, null);
             if (!mastodonTimelinesResponses.isEmpty()) {
                 sinceId = mastodonTimelinesResponses.getFirst().id();
-                OffsetStore offsetStore = new OffsetStore();
-                offsetStore.setCollector(CollectorType.MASTODON);
-                offsetStore.setPointer(sinceId);
-                offsetStoreRepository.save(offsetStore);
+                offsetStoreRepository.save(new OffsetStore(CollectorType.MASTODON, sinceId));
             }
             return mastodonTimelinesResponses;
         };

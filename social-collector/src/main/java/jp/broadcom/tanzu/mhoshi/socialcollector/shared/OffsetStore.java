@@ -12,6 +12,14 @@ public class OffsetStore {
 
     String pointer;
 
+    public OffsetStore() {
+    }
+
+    public OffsetStore(CollectorType collector, String pointer) {
+        this.collector = collector;
+        this.pointer = pointer;
+    }
+
     public CollectorType getCollector() {
         return collector;
     }
