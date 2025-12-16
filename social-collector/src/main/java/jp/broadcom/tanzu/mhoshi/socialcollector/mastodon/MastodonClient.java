@@ -8,10 +8,10 @@ import org.springframework.web.service.annotation.HttpExchange;
 
 import java.util.List;
 
-@HttpExchange
+@HttpExchange("/api")
 interface MastodonClient {
 
-    @GetExchange("/api/v1/timelines/tag/{hashtag}")
+    @GetExchange(url="/v1/timelines/tag/{hashtag}", accept = "application/json")
     List<MastodonTimelinesResponse> getMastodonTimeLineResponses(
             @PathVariable String hashtag,
             @RequestParam Integer limit,

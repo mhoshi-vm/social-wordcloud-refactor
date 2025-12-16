@@ -39,7 +39,6 @@ class MastodonClientConfig {
                         .build()
                         .toUriString())
                 .defaultHeaders(httpHeaders -> {
-                    httpHeaders.set("Accept", "application/json");
                     httpHeaders.set("Authorization", "Bearer " + mastodonProperties.token());
                 })
                 .requestInterceptor(((request, body, execution) -> {
