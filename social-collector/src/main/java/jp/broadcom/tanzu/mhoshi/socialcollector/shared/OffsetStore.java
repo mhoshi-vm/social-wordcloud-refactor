@@ -7,25 +7,25 @@ import jakarta.persistence.Id;
 @Entity
 public class OffsetStore {
 
-	@Id
-	CollectorType collector;
+    @Id
+    CollectorType collector;
 
-	String pointer;
+    String pointer;
 
-	public CollectorType getCollector() {
-		return collector;
-	}
+    public CollectorType getCollector() {
+        return collector;
+    }
 
-	public void setCollector(CollectorType collector) {
-		this.collector = collector;
-	}
+    public void setCollector(CollectorType collector) {
+        this.collector = collector;
+    }
 
-	public String getPointer() {
-		return pointer;
-	}
+    public String getPointer() {
+        return pointer;
+    }
 
-	public void setPointer(String offset) {
-		this.pointer = offset;
-	}
+    public void setPointer(String offset) {
+        this.pointer = offset;
+    }
 
 }

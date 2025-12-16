@@ -14,6 +14,7 @@ record MastodonProperties(
         String token,
         @DefaultValue("40")
         Integer pollingLimit,
+        @DefaultValue("Broadcom")
         String hashTag
 ) {
 }

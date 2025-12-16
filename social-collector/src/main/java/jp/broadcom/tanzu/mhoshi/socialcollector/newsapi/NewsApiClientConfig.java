@@ -1,6 +1,7 @@
 package jp.broadcom.tanzu.mhoshi.socialcollector.newsapi;
 
 
+import jp.broadcom.tanzu.mhoshi.socialcollector.shared.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -10,16 +11,32 @@ import org.springframework.web.client.support.RestClientHttpServiceGroupConfigur
 import org.springframework.web.service.registry.ImportHttpServices;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 @Configuration
 @EnableConfigurationProperties(NewsApiProperties.class)
-@ImportHttpServices(NewsApiClient.class)
+@ImportHttpServices(group = "newsapi", types = NewsApiClient.class)
 class NewsApiClientConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(NewsApiClientConfig.class);
 
+    String newsApiFrom;
+
+    public NewsApiClientConfig(OffsetStoreRepository offsetStoreRepository) {
+        String oneWeekAgo = LocalDate.now().minusDays(7).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        this.newsApiFrom = offsetStoreRepository.findById(CollectorType.NEWSAPI).isPresent()
+                ? offsetStoreRepository.findById(CollectorType.NEWSAPI).get().getPointer() : oneWeekAgo;
+    }
+
     @Bean
     RestClientHttpServiceGroupConfigurer groupNewsApiConfigurer(NewsApiProperties newsApiProperties) {
-        return groups -> groups.forEachClient((group, builder) -> builder
+        return groups -> groups.filterByName("newsapi").forEachClient((group, builder) -> builder
                 .baseUrl(UriComponentsBuilder.newInstance()
                         .scheme(newsApiProperties.scheme())
                         .host(newsApiProperties.url())
@@ -31,5 +48,42 @@ class NewsApiClientConfig {
                     return execution.execute(request, body);
                 }))
                 .build());
+    }
+
+    @Bean
+    Supplier<NewsApiResponse> newsApiSupplier(NewsApiClient newsApiClient,NewsApiProperties newsApiProperties, OffsetStoreRepository offsetStoreRepository) {
+        return () -> {
+
+            NewsApiResponse newsApiResponse = newsApiList(newsApiClient, newsApiProperties);
+            if (!newsApiResponse.articles().isEmpty()) {
+                this.newsApiFrom = newsApiResponse.articles().getFirst().publishedAt();
+                OffsetStore offsetStore = new OffsetStore();
+                offsetStore.setCollector(CollectorType.MASTODON);
+                offsetStore.setPointer(this.newsApiFrom);
+                offsetStoreRepository.save(offsetStore);
+            }
+            return newsApiResponse;
+        };
+    }
+
+    @Bean
+    Function<NewsApiResponse, List<SocialMessage>> convertNewsApiResponse(NewsApiProperties newsApiProperties) {
+        return (in) -> in.articles().stream()
+                .map(s -> new SocialMessage(UUID.nameUUIDFromBytes(s.url().getBytes()).toString(), s.source().name(),
+                        s.description(), newsApiProperties.language(), s.author(), s.url(),
+                        LocalDateTime.parse(s.publishedAt(), DateTimeFormatter.ISO_DATE_TIME), null, null,
+                        EventAction.INSERT))
+                .toList();
+    }
+
+    NewsApiResponse newsApiList(NewsApiClient newsApiClient, NewsApiProperties newsApiProperties) {
+        return newsApiClient.getEveryNews(
+                newsApiProperties.key(),
+                newsApiProperties.limit(),
+                newsApiProperties.query(),
+                newsApiProperties.language(),
+                newsApiFrom,
+                newsApiProperties.excludeDomains(),
+                "publishedAt", 1);
     }
 }
