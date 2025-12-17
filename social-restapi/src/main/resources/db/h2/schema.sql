@@ -10,12 +10,12 @@ CREATE TABLE IF NOT EXISTS social_message
     sentiment TEXT NULL ,
     sentiment_score FLOAT NULL,
     action TEXT,
-    word_vector TSVECTOR
+    word_vector FLOAT
 );
 
 CREATE TABLE IF NOT EXISTS term_frequency
 (
-    rank INT PRIMARY KEY NOT NULL,
+    rank INT,
     term TEXT,
     count INT
 );

@@ -12,9 +12,7 @@ class MessageWriter {
     @Bean
     Consumer<List<MessageEntity>> messageConsumer(MessageService messageService) {
         return (in)->{
-            System.out.println(in);
             messageService.saveAll(in);
-
         };
     }
 

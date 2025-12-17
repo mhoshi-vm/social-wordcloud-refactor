@@ -5,8 +5,8 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 
 @ConfigurationProperties("analytics")
 record AnalyticsConfigProperties(
-        @DefaultValue("false")
-        Boolean postgresEnabled,
+        @DefaultValue("h2")
+        String database,
         @DefaultValue("15000")
         Integer termFrequencyInterval,
         @DefaultValue("15000")

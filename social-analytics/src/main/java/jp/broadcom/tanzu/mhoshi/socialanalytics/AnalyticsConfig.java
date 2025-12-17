@@ -20,10 +20,4 @@ class AnalyticsConfig {
         return new SqlGenerator(config);
     }
 
-    @Bean
-    @ConditionalOnProperty(value = "analytics.postgres-enabled", havingValue = "true")
-    AnalyticsPostgres analyticsPostgres(JdbcClient jdbcClient, SqlGenerator sqlGenerator, AnalyticsConfigProperties analyticsConfigProperties) {
-        return new AnalyticsPostgres(jdbcClient, sqlGenerator, analyticsConfigProperties);
-    }
-
 }

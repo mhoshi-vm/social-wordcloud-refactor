@@ -1,23 +1,26 @@
 package jp.broadcom.tanzu.mhoshi.socialanalytics;
 
 import org.mybatis.scripting.thymeleaf.SqlGenerator;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 import static jp.broadcom.tanzu.mhoshi.socialanalytics.FileLoader.loadAsString;
 import static jp.broadcom.tanzu.mhoshi.socialanalytics.FileLoader.loadSqlAsString;
 
-class AnalyticsPostgres {
+@Component
+class AnalyticsComponent {
 
-    private static final String ENABLE_EXTENSIONS = "sqls/analytics/enableExtensions.sql";
-    private static final String CREATE_VADER_SENTIMENT_SQL = "sqls/analytics/vaderSentimentFunction.sql";
-    private static final String CREATE_VADER_SENTIMENT_SCRIPT = "sqls/analytics/vaderSentimentFunction.py";
-    private static final String TERM_FREQUENCY_RANKING_SQL = "sqls/analytics/termFrequencyRanking.sql";
-    private static final String UPDATE_TS_VECTOR_SQL = "sqls/analytics/updateTsvector.sql";
-    private static final String UPDATE_VADER_SENTIMENT_SQL = "sqls/analytics/updateVaderSentiment.sql";
+    String ENABLE_EXTENSIONS;
+    String CREATE_VADER_SENTIMENT_SQL;
+    String CREATE_VADER_SENTIMENT_SCRIPT;
+    String TERM_FREQUENCY_RANKING_SQL;
+    String UPDATE_TS_VECTOR_SQL;
+    String UPDATE_VADER_SENTIMENT_SQL;
 
     JdbcClient jdbcClient;
 
@@ -25,12 +28,22 @@ class AnalyticsPostgres {
 
     AnalyticsConfigProperties analyticsConfigProperties;
 
-    AnalyticsPostgres(JdbcClient jdbcClient, SqlGenerator sqlGenerator, AnalyticsConfigProperties analyticsConfigProperties) {
+    AnalyticsComponent(JdbcClient jdbcClient, SqlGenerator sqlGenerator, AnalyticsConfigProperties analyticsConfigProperties) {
         this.sqlGenerator = sqlGenerator;
         this.jdbcClient = jdbcClient;
         this.analyticsConfigProperties = analyticsConfigProperties;
+        updateSqlFiles(analyticsConfigProperties.database());
         enableExtensions();
         createVaderSentimentFunction();
+    }
+
+    void updateSqlFiles(String db){
+        ENABLE_EXTENSIONS = String.format("db/%s/enableExtensions.sql",db);
+        CREATE_VADER_SENTIMENT_SQL = String.format("db/%s/vaderSentimentFunction.sql",db);
+        CREATE_VADER_SENTIMENT_SCRIPT = String.format("db/%s/vaderSentimentFunction.py",db);
+        TERM_FREQUENCY_RANKING_SQL = String.format("db/%s/termFrequencyRanking.sql",db);
+        UPDATE_TS_VECTOR_SQL = String.format("db/%s/updateTsvector.sql",db);
+        UPDATE_VADER_SENTIMENT_SQL = String.format("db/%s/updateVaderSentiment.sql",db);
     }
 
     void enableExtensions() {
@@ -51,17 +64,17 @@ class AnalyticsPostgres {
                 .update();
     }
 
-    @Scheduled(fixedRateString = "#{@'jp.broadcom.tanzu.mhoshi.socialanalytics.AnalyticsConfigProperties'.termFrequencyInterval}")
+    @Scheduled(fixedRateString = "${analytics.term-frequency-interval}")
     void termFrequencyRanking() {
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(TERM_FREQUENCY_RANKING_SQL), params);
 
-        List<TermFrequency> termFrequencies = this.jdbcClient.sql(sql)
-                .query(TermFrequency.class)
-                .list();
+        this.jdbcClient
+                .sql(sql)
+                .update();
     }
 
-    @Scheduled(fixedRateString = "#{@'jp.broadcom.tanzu.mhoshi.socialanalytics.AnalyticsConfigProperties'.updateTsvectorInterval}")
+    @Scheduled(fixedRateString = "${analytics.update-tsvector-interval}")
     void updateTsvector() {
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(UPDATE_TS_VECTOR_SQL), params);
@@ -71,7 +84,7 @@ class AnalyticsPostgres {
                 .update();
     }
 
-    @Scheduled(fixedRateString = "#{@'jp.broadcom.tanzu.mhoshi.socialanalytics.AnalyticsConfigProperties'.updateVaderSentimentInterval}")
+    @Scheduled(fixedRateString = "${analytics.update-vader-sentiment-interval}")
     void updateVaderSentiment() {
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(UPDATE_VADER_SENTIMENT_SQL), params);
