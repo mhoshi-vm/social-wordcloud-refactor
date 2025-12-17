@@ -11,7 +11,11 @@ class MessageWriter {
 
     @Bean
     Consumer<List<MessageEntity>> messageConsumer(MessageService messageService) {
-        return messageService::saveAll;
+        return (in)->{
+            System.out.println(in);
+            messageService.saveAll(in);
+
+        };
     }
 
 }
