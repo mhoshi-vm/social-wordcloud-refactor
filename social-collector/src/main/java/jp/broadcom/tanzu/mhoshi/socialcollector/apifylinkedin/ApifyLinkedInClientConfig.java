@@ -24,7 +24,11 @@ class ApifyLinkedInClientConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(ApifyLinkedInClientConfig.class);
 
-    public ApifyLinkedInClientConfig() {
+    ApifyLinkedInRequest apifyLinkedInRequest;
+
+    public ApifyLinkedInClientConfig(ApifyLinkedInProperties apifyLinkedInProperties) {
+        this.apifyLinkedInRequest = new ApifyLinkedInRequest(apifyLinkedInProperties.keyword(), apifyLinkedInProperties.pollingLimit(), apifyLinkedInProperties.sortType());
+
     }
 
     @Bean
@@ -47,10 +51,7 @@ class ApifyLinkedInClientConfig {
     @Bean
     Supplier<List<ApifyLinkedInResponse>> pollLinkedIn(ApifyLinkedInClient apifyLinkedInClient, ApifyLinkedInProperties apifyLinkedInProperties) {
 
-        return () -> {
-            ApifyLinkedInRequest apifyLinkedInRequest = new ApifyLinkedInRequest(apifyLinkedInProperties.keyword(), apifyLinkedInProperties.pollingLimit(), apifyLinkedInProperties.sortType());
-            return apifyLinkedInClient.apifyLinkedInResponses(apifyLinkedInProperties.appId(), apifyLinkedInProperties.token(), apifyLinkedInRequest);
-        };
+        return () -> apifyLinkedInClient.apifyLinkedInResponses(apifyLinkedInProperties.appId(), apifyLinkedInProperties.token(), apifyLinkedInRequest);
     }
 
     @Bean
