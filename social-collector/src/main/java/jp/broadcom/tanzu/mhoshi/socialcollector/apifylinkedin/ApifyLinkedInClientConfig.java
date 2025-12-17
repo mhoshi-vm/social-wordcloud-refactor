@@ -56,7 +56,7 @@ class ApifyLinkedInClientConfig {
     @Bean
     Function<List<ApifyLinkedInResponse>, List<SocialMessage>> convertLinkedInResponse() {
         return (in) -> in.stream()
-                .map(s -> new SocialMessage(s.activity_id(), "apifylinkedin", s.text(), "en", s.author().name(),
+                .map(s -> new SocialMessage(s.activity_id(), "linkedIn", s.text(), "en", s.author().name(),
                         s.post_url(), LocalDateTime.ofInstant(s.posted_at().timestamp(), ZoneId.of("UTC")), EventAction.INSERT))
                 .toList();
     }

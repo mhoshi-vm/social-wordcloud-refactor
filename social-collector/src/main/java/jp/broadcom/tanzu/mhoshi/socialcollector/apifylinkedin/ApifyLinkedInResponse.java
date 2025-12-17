@@ -1,10 +1,6 @@
 package jp.broadcom.tanzu.mhoshi.socialcollector.apifylinkedin;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import tools.jackson.databind.annotation.JsonDeserialize;
-
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 record ApifyLinkedInResponse(
         String activity_id,
