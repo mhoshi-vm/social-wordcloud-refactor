@@ -1,22 +1,19 @@
 package jp.broadcom.tanzu.mhoshi.socialrestapi.message;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "social_message")
-public class MessageEntity {
+class MessageEntity {
 
     @Id
     String id;
 
     String origin;
 
-    @Column(columnDefinition = "TEXT")
     String text;
 
     String lang;
@@ -29,12 +26,13 @@ public class MessageEntity {
 
     LocalDateTime createDateTime;
 
-    String sentiment;
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL)
+    List<MessageEntitySentiment> sentiments;
 
-    Float sentimentScore;
+    @OneToOne(mappedBy = "message", cascade = CascadeType.ALL)
+    MessageEntityTsvector Lexemes;
 
-    EventAction action;
-
+    // The reason for visibility https://www.baeldung.com/jackson-field-serializable-deserializable-or-not
     public String getId() {
         return id;
     }
@@ -59,16 +57,8 @@ public class MessageEntity {
         return url;
     }
 
-    public EventAction getAction() {
-        return action;
-    }
-
-    public Float getSentimentScore() {
-        return sentimentScore;
-    }
-
-    public String getSentiment() {
-        return sentiment;
+    List<MessageEntitySentiment> getSentiments() {
+        return sentiments;
     }
 
     public LocalDateTime getCreateDateTime() {
@@ -77,18 +67,14 @@ public class MessageEntity {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("MessageEntity{");
-        sb.append("id='").append(id).append('\'');
-        sb.append(", origin='").append(origin).append('\'');
-        sb.append(", text='").append(text).append('\'');
-        sb.append(", lang='").append(lang).append('\'');
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", url='").append(url).append('\'');
-        sb.append(", createDateTime=").append(createDateTime);
-        sb.append(", sentiment='").append(sentiment).append('\'');
-        sb.append(", sentimentScore=").append(sentimentScore);
-        sb.append(", action=").append(action);
-        sb.append('}');
-        return sb.toString();
+        return "MessageEntity{" + "id='" + id + '\'' +
+                ", origin='" + origin + '\'' +
+                ", text='" + text + '\'' +
+                ", lang='" + lang + '\'' +
+                ", name='" + name + '\'' +
+                ", url='" + url + '\'' +
+                ", createDateTime=" + createDateTime +
+                ", sentiments='" + sentiments + '\'' +
+                '}';
     }
 }

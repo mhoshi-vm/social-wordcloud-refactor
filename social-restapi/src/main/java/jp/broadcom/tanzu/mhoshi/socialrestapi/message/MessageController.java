@@ -21,7 +21,8 @@ class MessageController {
     List<MessageEntity> getAllMessages(@RequestParam(defaultValue = "0") int pageNum,
                                        @RequestParam(defaultValue = "100") int pageSize,
                                        @RequestParam(defaultValue = "createDateTime") String sortBy) {
-        return messageService.pageableFindAll(pageNum, pageSize, sortBy);
+        List<MessageEntity> messageEntities = messageService.pageableFindAll(pageNum, pageSize, sortBy);
+        return messageEntities;
     }
 
     @PostMapping("/delete")

@@ -1,7 +1,5 @@
 package jp.broadcom.tanzu.mhoshi.socialrestapi.notifier;
 
-import jp.broadcom.tanzu.mhoshi.socialrestapi.message.EventAction;
-import jp.broadcom.tanzu.mhoshi.socialrestapi.message.MessageEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,15 +24,13 @@ class NotificationEventService {
         return emitters;
     }
 
-    void notify(MessageEntity messageEntity) {
-        if (messageEntity.getAction().equals(EventAction.INSERT)) {
+    void notify(String messageEntity) {
             emitters.forEach(emitter -> {
                 try {
-                    emitter.send(SseEmitter.event().name("new entry").data("New Entry : " + messageEntity.getText()));
+                    emitter.send(SseEmitter.event().name("new entry").data("New Entry : " ));
                 } catch (IOException e) {
                     logger.warn("Failed to send SSE :{}", String.valueOf(e));
                 }
             });
-        }
     }
 }
