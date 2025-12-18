@@ -74,4 +74,21 @@ public class MessageEntity {
     public LocalDateTime getCreateDateTime() {
         return createDateTime;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MessageEntity{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", origin='").append(origin).append('\'');
+        sb.append(", text='").append(text).append('\'');
+        sb.append(", lang='").append(lang).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", url='").append(url).append('\'');
+        sb.append(", createDateTime=").append(createDateTime);
+        sb.append(", sentiment='").append(sentiment).append('\'');
+        sb.append(", sentimentScore=").append(sentimentScore);
+        sb.append(", action=").append(action);
+        sb.append('}');
+        return sb.toString();
+    }
 }
