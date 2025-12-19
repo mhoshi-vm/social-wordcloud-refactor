@@ -1,13 +1,10 @@
 package jp.broadcom.tanzu.mhoshi.socialanalytics;
 
 import org.mybatis.scripting.thymeleaf.SqlGenerator;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 import static jp.broadcom.tanzu.mhoshi.socialanalytics.FileLoader.loadAsString;
 import static jp.broadcom.tanzu.mhoshi.socialanalytics.FileLoader.loadSqlAsString;
@@ -15,21 +12,9 @@ import static jp.broadcom.tanzu.mhoshi.socialanalytics.FileLoader.loadSqlAsStrin
 @Component
 class AnalyticsComponent {
 
-    private record SqlScripts(
-            String enableExtensions,
-            String createVaderSql,
-            String createVaderScript,
-            String termFrequency,
-            String updateTsVector,
-            String updateVader
-    ) {}
-
     SqlScripts sqlScripts;
-
     JdbcClient jdbcClient;
-
     SqlGenerator sqlGenerator;
-
     AnalyticsConfigProperties analyticsConfigProperties;
 
     AnalyticsComponent(JdbcClient jdbcClient, SqlGenerator sqlGenerator, AnalyticsConfigProperties analyticsConfigProperties) {
@@ -53,7 +38,6 @@ class AnalyticsComponent {
         );
     }
 
-
     void enableExtensions() {
         final MapSqlParameterSource params = new MapSqlParameterSource();
         final String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.enableExtensions), params.getValues());
@@ -64,7 +48,7 @@ class AnalyticsComponent {
 
     void createVaderSentimentFunction() {
         final MapSqlParameterSource params = new MapSqlParameterSource();
-        String plpythonscript = "'"+ loadAsString(sqlScripts.createVaderScript())+"'";
+        String plpythonscript = "'" + loadAsString(sqlScripts.createVaderScript()) + "'";
         params.addValue("plpythonscript", plpythonscript);
         final String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.createVaderSql), params.getValues());
         this.jdbcClient
@@ -100,6 +84,16 @@ class AnalyticsComponent {
         this.jdbcClient
                 .sql(sql)
                 .update();
+    }
+
+    private record SqlScripts(
+            String enableExtensions,
+            String createVaderSql,
+            String createVaderScript,
+            String termFrequency,
+            String updateTsVector,
+            String updateVader
+    ) {
     }
 
 }
