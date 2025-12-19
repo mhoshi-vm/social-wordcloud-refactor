@@ -40,3 +40,17 @@ CREATE TABLE IF NOT EXISTS term_frequency_entity (
     count             INTEGER
 );
 
+-- Sequence for Primary Key generation
+CREATE SEQUENCE stock_entity_seq
+    START WITH 1
+    INCREMENT BY 50;
+
+-- Table for Stock Data
+CREATE TABLE stock_entity (
+    id        BIGINT NOT NULL,
+    ticker    VARCHAR(255),
+    price     FLOAT(24),
+    volume    INTEGER,
+    updated   TIMESTAMP(6) WITH TIME ZONE,
+    PRIMARY KEY (id)
+);

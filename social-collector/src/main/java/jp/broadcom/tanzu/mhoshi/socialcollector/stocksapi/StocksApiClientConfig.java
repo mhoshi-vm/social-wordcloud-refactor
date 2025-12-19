@@ -49,10 +49,10 @@ class StocksApiClientConfig {
     }
 
     @Bean
-    Function<StockPriceResponse, List<SocialMessage>> convertStocksApi(StocksApiProperties socialApiProperties) {
+    Function<StockPriceResponse, List<SocialMessage>> convertStocksApi(StocksApiProperties socialApiProperties, StocksApiProperties stocksApiProperties) {
         return (in) -> {
 
-            SocialMessage socialMessage = new SocialMessage(UUID.nameUUIDFromBytes(in.updated().toString().getBytes()).toString(), "stocksapi", in.price().toString(), "en", "AVGO",
+            SocialMessage socialMessage = new SocialMessage(UUID.nameUUIDFromBytes(in.updated().toString().getBytes()).toString(), "stocksapi", in.price().toString(), "en", stocksApiProperties.ticker(),
                            socialApiProperties.url() , LocalDateTime.ofInstant(in.updated(), ZoneId.of("UTC")), EventAction.INSERT);
 
             return List.of(socialMessage);
