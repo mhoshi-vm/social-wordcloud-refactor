@@ -75,7 +75,7 @@ class AnalyticsComponent {
                 .update();
     }
 
-    @Scheduled(fixedRateString = "${analytics.term-frequency-interval}")
+    @Scheduled(fixedDelayString = "${analytics.term-frequency-interval}")
     void termFrequencyRanking() {
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.termFrequency), params);
@@ -86,7 +86,7 @@ class AnalyticsComponent {
     }
 
 
-    @Scheduled(fixedRateString = "${analytics.update-tsvector-interval}")
+    @Scheduled(fixedDelayString = "${analytics.update-tsvector-interval}")
     void updateTsvector() {
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateTsVector), params);
@@ -96,7 +96,7 @@ class AnalyticsComponent {
                 .update();
     }
 
-    @Scheduled(fixedRateString = "${analytics.update-vader-sentiment-interval}")
+    @Scheduled(fixedDelayString = "${analytics.update-vader-sentiment-interval}")
     void updateVaderSentiment() {
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateVader), params);
@@ -106,7 +106,7 @@ class AnalyticsComponent {
                 .update();
     }
 
-    @Scheduled(fixedRateString = "${analytics.update-embeddings-interval}")
+    @Scheduled(fixedDelayString = "${analytics.update-embeddings-interval}")
     void updateEmbeddings() {
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateEmbeddings_1), params);
@@ -144,7 +144,7 @@ class AnalyticsComponent {
         }
     }
 
-    @Scheduled(fixedRateString = "${analytics.update-guess-gis-info}")
+    @Scheduled(fixedDelayString = "${analytics.update-guess-gis-info}")
     void updateGuessGisInfo() {
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateGisInfo_1), params);
@@ -152,7 +152,7 @@ class AnalyticsComponent {
         List<GisInfo> gisInfos = analyticsAiService.getGisInfo(messages.stream().map(Record::toString).toList());
 
         if (!gisInfos.isEmpty()) {
-            this.jdbcTemplate.batchUpdate(loadAsString(sqlScripts.updateEmbeddings_2), new BatchPreparedStatementSetter() {
+            this.jdbcTemplate.batchUpdate(loadAsString(sqlScripts.updateGisInfo_2), new BatchPreparedStatementSetter() {
 
                 @Override
                 public void setValues(PreparedStatement ps, int i) throws SQLException {

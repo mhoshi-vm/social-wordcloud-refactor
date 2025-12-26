@@ -5,4 +5,3 @@ If not possible use alternate information such as origin column.
 Generate the message_id, coordinate in GIS POINT() format, srid, and also a brief summary of why you believe it is that location.
 The next lines is the message in Json.
 {message}
-

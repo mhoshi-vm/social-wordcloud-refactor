@@ -34,7 +34,6 @@ class AnalyticsAiService {
             if (gisInfo != null) {
                 gisInfos.add(gisInfo);
             }
-            System.out.println();
         });
         return gisInfos;
     }
