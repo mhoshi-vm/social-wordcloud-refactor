@@ -1,10 +1,20 @@
 package jp.broadcom.tanzu.mhoshi.socialanalytics;
 
 import org.mybatis.scripting.thymeleaf.SqlGenerator;
+import org.springframework.ai.embedding.Embedding;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.IntStream;
 
 import static jp.broadcom.tanzu.mhoshi.socialanalytics.FileLoader.loadAsString;
 import static jp.broadcom.tanzu.mhoshi.socialanalytics.FileLoader.loadSqlAsString;
@@ -14,13 +24,18 @@ class AnalyticsComponent {
 
     SqlScripts sqlScripts;
     JdbcClient jdbcClient;
+    JdbcTemplate jdbcTemplate;
     SqlGenerator sqlGenerator;
+    AnalyticsAiService analyticsAiService;
+
     AnalyticsConfigProperties analyticsConfigProperties;
 
-    AnalyticsComponent(JdbcClient jdbcClient, SqlGenerator sqlGenerator, AnalyticsConfigProperties analyticsConfigProperties) {
+    AnalyticsComponent(JdbcClient jdbcClient, JdbcTemplate jdbcTemplate, SqlGenerator sqlGenerator, AnalyticsAiService analyticsAiService, AnalyticsConfigProperties analyticsConfigProperties) {
         this.sqlGenerator = sqlGenerator;
+        this.jdbcTemplate = jdbcTemplate;
         this.jdbcClient = jdbcClient;
         this.analyticsConfigProperties = analyticsConfigProperties;
+        this.analyticsAiService = analyticsAiService;
         this.sqlScripts = createScriptPaths(analyticsConfigProperties.database());
         enableExtensions();
         createVaderSentimentFunction();
@@ -34,7 +49,9 @@ class AnalyticsComponent {
                 base + "vaderSentimentFunction.py",
                 base + "termFrequencyRanking.sql",
                 base + "updateTsvector.sql",
-                base + "updateVaderSentiment.sql"
+                base + "updateVaderSentiment.sql",
+                base + "updateEmbeddings_1.sql",
+                base + "updateEmbeddings_2.sql"
         );
     }
 
@@ -66,6 +83,7 @@ class AnalyticsComponent {
                 .update();
     }
 
+
     @Scheduled(fixedRateString = "${analytics.update-tsvector-interval}")
     void updateTsvector() {
         final MapSqlParameterSource params = new MapSqlParameterSource();
@@ -86,13 +104,53 @@ class AnalyticsComponent {
                 .update();
     }
 
+    @Scheduled(fixedRateString = "${analytics.update-embeddings-interval}")
+    void updateEmbeddings() {
+        final MapSqlParameterSource params = new MapSqlParameterSource();
+        String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateEmbeddings_1), params);
+        List<SocialMessage> messages = this.jdbcClient.sql(sql).query(SocialMessage.class).list();
+        if (!messages.isEmpty()) {
+            List<Embedding> embeddings = analyticsAiService.getEmbeddingResponse(messages.stream().map(SocialMessage::text).toList()).getResults();
+
+            if (messages.size() == embeddings.size()) {
+                this.jdbcTemplate.batchUpdate(loadAsString(sqlScripts.updateEmbeddings_2), new BatchPreparedStatementSetter() {
+
+                    @Override
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        SocialMessage document = messages.get(i);
+                        Embedding embedding = embeddings.get(i);
+                        ObjectMapper mapper = new ObjectMapper();
+
+                        Connection conn = ps.getConnection();
+                        Float[] embeddingArray = IntStream.range(0, embedding.getOutput().length)
+                                .mapToObj(j -> embedding.getOutput()[j])
+                                .toArray(Float[]::new);
+
+                        ps.setString(1, document.id());
+                        ps.setString(2, document.text());
+                        ps.setString(3, mapper.writeValueAsString(embedding.getMetadata()));
+                        ps.setArray(4, conn.createArrayOf("FLOAT", embeddingArray));
+
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return messages.size();
+                    }
+                });
+            }
+        }
+    }
+
     private record SqlScripts(
             String enableExtensions,
             String createVaderSql,
             String createVaderScript,
             String termFrequency,
             String updateTsVector,
-            String updateVader
+            String updateVader,
+            String updateEmbeddings_1,
+            String updateEmbeddings_2
     ) {
     }
 

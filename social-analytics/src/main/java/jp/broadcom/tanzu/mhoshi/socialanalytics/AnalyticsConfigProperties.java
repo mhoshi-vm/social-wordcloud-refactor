@@ -12,6 +12,8 @@ record AnalyticsConfigProperties(
         @DefaultValue("15000")
         Integer updateTsvectorInterval,
         @DefaultValue("15000")
-        Integer updateVaderSentimentInterval
+        Integer updateVaderSentimentInterval,
+        @DefaultValue("60000")
+        Integer updateEmbeddingsInterval
 ) {
 }

@@ -40,3 +40,15 @@ CREATE TABLE IF NOT EXISTS term_frequency_entity (
     count             INTEGER
 );
 
+--- 5. Vector Store
+CREATE TABLE IF NOT EXISTS vector_store (
+    id                BIGINT AUTO_INCREMENT,
+    message_id        VARCHAR(64) UNIQUE,
+    content CLOB,
+    metadata JSON,
+    -- Store the vector as an array of floats
+    embedding REAL ARRAY,
+    CONSTRAINT fk_vector_message
+        FOREIGN KEY (message_id) REFERENCES social_message (id)
+        ON DELETE CASCADE
+);
