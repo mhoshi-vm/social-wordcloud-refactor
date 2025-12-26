@@ -1,0 +1,8 @@
+Estimate the location of the message and generate a coordinate.
+Do not give me a summary.
+Always prefer use the text column to determine the location.
+If not possible use alternate information such as origin column.
+Generate the message_id, coordinate in GIS POINT() format, srid, and also a brief summary of why you believe it is that location.
+The next lines is the message in Json.
+{message}
+

@@ -14,6 +14,8 @@ record AnalyticsConfigProperties(
         @DefaultValue("15000")
         Integer updateVaderSentimentInterval,
         @DefaultValue("60000")
-        Integer updateEmbeddingsInterval
+        Integer updateEmbeddingsInterval,
+        @DefaultValue("300000")
+        Integer updateGuessGisInfo
 ) {
 }

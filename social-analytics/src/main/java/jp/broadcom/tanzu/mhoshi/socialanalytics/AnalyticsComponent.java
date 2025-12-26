@@ -51,7 +51,9 @@ class AnalyticsComponent {
                 base + "updateTsvector.sql",
                 base + "updateVaderSentiment.sql",
                 base + "updateEmbeddings_1.sql",
-                base + "updateEmbeddings_2.sql"
+                base + "updateEmbeddings_2.sql",
+                base + "updateGisInfo_1.sql",
+                base + "updateGisInfo_2.sql"
         );
     }
 
@@ -108,7 +110,7 @@ class AnalyticsComponent {
     void updateEmbeddings() {
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateEmbeddings_1), params);
-        List<SocialMessage> messages = this.jdbcClient.sql(sql).query(SocialMessage.class).list();
+        final List<SocialMessage> messages = this.jdbcClient.sql(sql).query(SocialMessage.class).list();
         if (!messages.isEmpty()) {
             List<Embedding> embeddings = analyticsAiService.getEmbeddingResponse(messages.stream().map(SocialMessage::text).toList()).getResults();
 
@@ -142,6 +144,35 @@ class AnalyticsComponent {
         }
     }
 
+    @Scheduled(fixedRateString = "${analytics.update-guess-gis-info}")
+    void updateGuessGisInfo() {
+        final MapSqlParameterSource params = new MapSqlParameterSource();
+        String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateGisInfo_1), params);
+        final List<SocialMessage> messages = this.jdbcClient.sql(sql).query(SocialMessage.class).list();
+        List<GisInfo> gisInfos = analyticsAiService.getGisInfo(messages.stream().map(Record::toString).toList());
+
+        if (!gisInfos.isEmpty()) {
+            this.jdbcTemplate.batchUpdate(loadAsString(sqlScripts.updateEmbeddings_2), new BatchPreparedStatementSetter() {
+
+                @Override
+                public void setValues(PreparedStatement ps, int i) throws SQLException {
+                    GisInfo document = gisInfos.get(i);
+
+                    ps.setString(1, document.messageId());
+                    ps.setInt(2, document.srid());
+                    ps.setString(3, document.gis());
+                    ps.setString(4, document.reason());
+
+                }
+
+                @Override
+                public int getBatchSize() {
+                    return gisInfos.size();
+                }
+            });
+        }
+    }
+
     private record SqlScripts(
             String enableExtensions,
             String createVaderSql,
@@ -150,7 +181,9 @@ class AnalyticsComponent {
             String updateTsVector,
             String updateVader,
             String updateEmbeddings_1,
-            String updateEmbeddings_2
+            String updateEmbeddings_2,
+            String updateGisInfo_1,
+            String updateGisInfo_2
     ) {
     }
 

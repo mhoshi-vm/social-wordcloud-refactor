@@ -1,2 +1,0 @@
-Estimate the location of these {messages} and generate a coordinate that can be read from PostGis, for each of these messages.
-

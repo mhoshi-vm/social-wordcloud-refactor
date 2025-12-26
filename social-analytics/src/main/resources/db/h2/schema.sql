@@ -52,3 +52,15 @@ CREATE TABLE IF NOT EXISTS vector_store (
         FOREIGN KEY (message_id) REFERENCES social_message (id)
         ON DELETE CASCADE
 );
+
+--- 6. Gis Info
+CREATE TABLE IF NOT EXISTS gis_info (
+    id                BIGINT AUTO_INCREMENT,
+    message_id        VARCHAR(64) UNIQUE,
+    srid INTEGER,
+    gis TEXT,
+    reason TEXT,
+    CONSTRAINT fk_gis_message
+        FOREIGN KEY (message_id) REFERENCES social_message (id)
+        ON DELETE CASCADE
+);
