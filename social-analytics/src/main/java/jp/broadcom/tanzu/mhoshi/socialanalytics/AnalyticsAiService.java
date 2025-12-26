@@ -24,7 +24,6 @@ class AnalyticsAiService {
         return this.embeddingModel.embedForResponse(messages);
     }
 
-    @Nullable
     List<GisInfo> getGisInfo(List<String> messages) {
         List<GisInfo> gisInfos = new ArrayList<>();
         messages.forEach(message -> {
