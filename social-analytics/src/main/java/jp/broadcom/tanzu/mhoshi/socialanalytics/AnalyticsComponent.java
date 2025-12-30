@@ -42,17 +42,16 @@ class AnalyticsComponent {
         this.analyticsConfigProperties = analyticsConfigProperties;
         this.analyticsAiService = analyticsAiService;
         this.sqlScripts = createScriptPaths(analyticsConfigProperties.database());
-        enableExtensions();
         createVaderSentimentFunction();
     }
 
     private static SqlScripts createScriptPaths(String db) {
         String base = "db/" + db + "/";
         return new SqlScripts(
-                base + "enableExtensions.sql",
                 base + "vaderSentimentFunction.sql",
                 base + "vaderSentimentFunction.py",
                 base + "updateTsvector.sql",
+                base + "refreshTsvector.sql",
                 base + "updateVaderSentiment.sql",
                 base + "updateEmbeddings_1.sql",
                 base + "updateEmbeddings_2.sql",
@@ -61,19 +60,10 @@ class AnalyticsComponent {
         );
     }
 
-    void enableExtensions() {
-        logger.debug("enableExtensions");
-        final MapSqlParameterSource params = new MapSqlParameterSource();
-        final String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.enableExtensions), params.getValues());
-        this.jdbcClient
-                .sql(sql)
-                .update();
-    }
-
     void createVaderSentimentFunction() {
         logger.debug("createVaderSentimentFunction");
         final MapSqlParameterSource params = new MapSqlParameterSource();
-        String plpythonscript = "'" + loadAsString(sqlScripts.createVaderScript()) + "'";
+        String plpythonscript = loadAsString(sqlScripts.createVaderScript());
         params.addValue("plpythonscript", plpythonscript);
         final String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.createVaderSql), params.getValues());
         this.jdbcClient
@@ -87,9 +77,13 @@ class AnalyticsComponent {
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateTsVector), params);
 
-        this.jdbcClient
-                .sql(sql)
-                .update();
+        int rowsInserted = this.jdbcClient.sql(sql).update();
+
+        if (rowsInserted > 0) {
+            logger.info("Tsvector updated, refresh");
+            String refreshSql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.refreshTsVector), params);
+            jdbcClient.sql(refreshSql).update();
+        }
     }
 
     @Scheduled(fixedRateString = "${analytics.update-vader-sentiment-interval}")
@@ -178,10 +172,10 @@ class AnalyticsComponent {
     }
 
     private record SqlScripts(
-            String enableExtensions,
             String createVaderSql,
             String createVaderScript,
             String updateTsVector,
+            String refreshTsVector,
             String updateVader,
             String updateEmbeddings_1,
             String updateEmbeddings_2,
