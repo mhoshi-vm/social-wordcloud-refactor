@@ -12,7 +12,7 @@ class TestContainersConfiguration {
 	@Bean
 	@ServiceConnection
 	PostgreSQLContainer postgresContainer() {
-		return new PostgreSQLContainer(DockerImageName.parse("postgres:latest"));
+		return new PostgreSQLContainer(DockerImageName.parse("timescale/timescaledb-ha:pg16.6-ts2.18.0").asCompatibleSubstituteFor("postgres"));
 	}
 
 }
