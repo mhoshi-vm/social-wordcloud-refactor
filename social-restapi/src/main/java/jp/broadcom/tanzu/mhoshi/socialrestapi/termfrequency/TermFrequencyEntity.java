@@ -2,9 +2,10 @@ package jp.broadcom.tanzu.mhoshi.socialrestapi.termfrequency;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import org.hibernate.annotations.Immutable;
 
 @Entity
-//@Region
+@Immutable
 class TermFrequencyEntity {
 
     @Id

@@ -1,11 +1,14 @@
 package jp.broadcom.tanzu.mhoshi.socialanalytics;
 
 import org.mybatis.scripting.thymeleaf.SqlGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.embedding.Embedding;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
@@ -20,6 +23,7 @@ import static jp.broadcom.tanzu.mhoshi.socialanalytics.FileLoader.loadAsString;
 import static jp.broadcom.tanzu.mhoshi.socialanalytics.FileLoader.loadSqlAsString;
 
 @Component
+@Async
 class AnalyticsComponent {
 
     SqlScripts sqlScripts;
@@ -27,8 +31,9 @@ class AnalyticsComponent {
     JdbcTemplate jdbcTemplate;
     SqlGenerator sqlGenerator;
     AnalyticsAiService analyticsAiService;
-
     AnalyticsConfigProperties analyticsConfigProperties;
+
+    private static final Logger logger = LoggerFactory.getLogger(AnalyticsComponent.class);
 
     AnalyticsComponent(JdbcClient jdbcClient, JdbcTemplate jdbcTemplate, SqlGenerator sqlGenerator, AnalyticsAiService analyticsAiService, AnalyticsConfigProperties analyticsConfigProperties) {
         this.sqlGenerator = sqlGenerator;
@@ -47,7 +52,6 @@ class AnalyticsComponent {
                 base + "enableExtensions.sql",
                 base + "vaderSentimentFunction.sql",
                 base + "vaderSentimentFunction.py",
-                base + "termFrequencyRanking.sql",
                 base + "updateTsvector.sql",
                 base + "updateVaderSentiment.sql",
                 base + "updateEmbeddings_1.sql",
@@ -58,6 +62,7 @@ class AnalyticsComponent {
     }
 
     void enableExtensions() {
+        logger.debug("enableExtensions");
         final MapSqlParameterSource params = new MapSqlParameterSource();
         final String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.enableExtensions), params.getValues());
         this.jdbcClient
@@ -66,6 +71,7 @@ class AnalyticsComponent {
     }
 
     void createVaderSentimentFunction() {
+        logger.debug("createVaderSentimentFunction");
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String plpythonscript = "'" + loadAsString(sqlScripts.createVaderScript()) + "'";
         params.addValue("plpythonscript", plpythonscript);
@@ -75,19 +81,9 @@ class AnalyticsComponent {
                 .update();
     }
 
-    @Scheduled(fixedDelayString = "${analytics.term-frequency-interval}")
-    void termFrequencyRanking() {
-        final MapSqlParameterSource params = new MapSqlParameterSource();
-        String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.termFrequency), params);
-
-        this.jdbcClient
-                .sql(sql)
-                .update();
-    }
-
-
-    @Scheduled(fixedDelayString = "${analytics.update-tsvector-interval}")
+    @Scheduled(fixedRateString = "${analytics.update-tsvector-interval}")
     void updateTsvector() {
+        logger.debug("updateTsvector");
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateTsVector), params);
 
@@ -96,8 +92,9 @@ class AnalyticsComponent {
                 .update();
     }
 
-    @Scheduled(fixedDelayString = "${analytics.update-vader-sentiment-interval}")
+    @Scheduled(fixedRateString = "${analytics.update-vader-sentiment-interval}")
     void updateVaderSentiment() {
+        logger.debug("updateVaderSentiment");
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateVader), params);
 
@@ -106,8 +103,9 @@ class AnalyticsComponent {
                 .update();
     }
 
-    @Scheduled(fixedDelayString = "${analytics.update-embeddings-interval}")
+    @Scheduled(fixedRateString = "${analytics.update-embeddings-interval}")
     void updateEmbeddings() {
+        logger.debug("updateEmbeddings");
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateEmbeddings_1), params);
         final List<SocialMessage> messages = this.jdbcClient.sql(sql).query(SocialMessage.class).list();
@@ -144,8 +142,9 @@ class AnalyticsComponent {
         }
     }
 
-    @Scheduled(fixedDelayString = "${analytics.update-guess-gis-info}")
+    @Scheduled(fixedRateString = "${analytics.update-guess-gis-info}")
     void updateGuessGisInfo() {
+        logger.debug("updateGuessGisInfo");
         final MapSqlParameterSource params = new MapSqlParameterSource();
         String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateGisInfo_1), params);
         final List<SocialMessage> messages = this.jdbcClient.sql(sql).query(SocialMessage.class).list();
@@ -177,7 +176,6 @@ class AnalyticsComponent {
             String enableExtensions,
             String createVaderSql,
             String createVaderScript,
-            String termFrequency,
             String updateTsVector,
             String updateVader,
             String updateEmbeddings_1,
