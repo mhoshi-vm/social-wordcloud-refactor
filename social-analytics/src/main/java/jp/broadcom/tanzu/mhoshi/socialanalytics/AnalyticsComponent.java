@@ -115,11 +115,12 @@ class AnalyticsComponent {
             if (messages.size() == embeddings.size()) {
                 this.jdbcTemplate.batchUpdate(loadAsString(sqlScripts.updateEmbeddings_2), new BatchPreparedStatementSetter() {
 
+                    private static final ObjectMapper mapper = new ObjectMapper();
+
                     @Override
                     public void setValues(PreparedStatement ps, int i) throws SQLException {
                         SocialMessage document = messages.get(i);
                         Embedding embedding = embeddings.get(i);
-                        ObjectMapper mapper = new ObjectMapper();
 
                         Connection conn = ps.getConnection();
                         Float[] embeddingArray = IntStream.range(0, embedding.getOutput().length)
@@ -128,7 +129,11 @@ class AnalyticsComponent {
 
                         ps.setString(1, document.id());
                         ps.setString(2, document.text());
-                        ps.setString(3, mapper.writeValueAsString(embedding.getMetadata()));
+                        try {
+                            ps.setObject(3, mapper.writeValueAsString(embedding.getMetadata()), java.sql.Types.OTHER);
+                        } catch (Exception e) {
+                            throw new SQLException("Failed to serialize metadata", e);
+                        }
                         ps.setArray(4, conn.createArrayOf("FLOAT", embeddingArray));
 
                     }
