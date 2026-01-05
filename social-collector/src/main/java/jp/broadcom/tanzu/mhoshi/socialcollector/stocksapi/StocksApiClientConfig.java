@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.support.RestClientHttpServiceGroupConfigurer;
 import org.springframework.web.service.registry.ImportHttpServices;
 import org.springframework.web.util.UriComponentsBuilder;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -49,10 +50,10 @@ class StocksApiClientConfig {
     }
 
     @Bean
-    Function<StockPriceResponse, List<SocialMessage>> convertStocksApi(StocksApiProperties socialApiProperties, StocksApiProperties stocksApiProperties) {
+    Function<StockPriceResponse, List<SocialMessage>> convertStocksApi(StocksApiProperties socialApiProperties, StocksApiProperties stocksApiProperties, ObjectMapper objectMapper) {
         return (in) -> {
 
-            SocialMessage socialMessage = new SocialMessage(UUID.nameUUIDFromBytes(("stocksprice:" + in.updated()).getBytes()).toString(), "stocksprice", in.price().toString(), "en", stocksApiProperties.ticker(),
+            SocialMessage socialMessage = new SocialMessage(UUID.nameUUIDFromBytes(("stocksprice:" + in.updated()).getBytes()).toString(), "stocksprice", objectMapper.writeValueAsString(in), "en", stocksApiProperties.ticker(),
                            socialApiProperties.url() , LocalDateTime.ofInstant(in.updated(), ZoneId.of("UTC")));
 
             return List.of(socialMessage);
