@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS message_entity_tsvector
 );
 
 -- 4. Analytics Helpers
-CREATE MATERIALIZED VIEW term_frequency_entity AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS term_frequency_entity AS
 SELECT ROW_NUMBER() OVER (ORDER BY nentry DESC) AS rank,
        word AS term,
        nentry AS count
@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS gis_info
 
 --- 7. Timeseries DB
 -- Create continous aggregated view
-CREATE MATERIALIZED VIEW hourly_message_stats
+CREATE MATERIALIZED VIEW IF NOT EXISTS hourly_message_stats
 WITH (timescaledb.continuous) AS
 SELECT
     time_bucket('1 hour', create_date_time) AS bucket,
@@ -107,15 +107,15 @@ SELECT add_continuous_aggregate_policy('hourly_message_stats',
     schedule_interval => INTERVAL '30 minutes');
 
 
-CREATE VIEW hourly_message AS
+CREATE OR REPLACE VIEW hourly_message AS
 SELECT
     time_bucket_gapfill('1 hour', bucket) AS bucket,
     origin,
-    message_count
+    SUM(message_count) AS message_count -- Wrap this in SUM()
 FROM
     hourly_message_stats
 WHERE
-    bucket > now() - INTERVAL '1 month' -- Gapfill requires a time range
+    bucket > now() - INTERVAL '1 month'
 GROUP BY
     bucket,
     origin
@@ -123,7 +123,7 @@ ORDER BY
     bucket DESC;
 
 --- 8. Stock price view
-CREATE MATERIALIZED VIEW daily_stock_metrics
+CREATE MATERIALIZED VIEW IF NOT EXISTS daily_stock_metrics
 WITH (timescaledb.continuous) AS
 SELECT
     time_bucket('1 day', create_date_time) AS bucket,
@@ -149,4 +149,4 @@ CREATE INDEX IF NOT EXISTS idx_social_message ON social_message (origin, create_
 CREATE INDEX IF NOT EXISTS idx_sentiment_lookup ON message_entity_sentiment (message_id, model_name);
 CREATE INDEX IF NOT EXISTS idx_tsvector_gin ON message_entity_tsvector USING GIN(word_vector);
 CREATE INDEX IF NOT EXISTS idx_gis_info_spatial ON gis_info USING GIST (geom);
-CREATE INDEX IF NOT EXISTS idx_vector_search ON vector_store USING hnsw (embedding vector_cosine_ops);
+-- CREATE INDEX IF NOT EXISTS idx_vector_search ON vector_store USING hnsw (embedding vector_cosine_ops);

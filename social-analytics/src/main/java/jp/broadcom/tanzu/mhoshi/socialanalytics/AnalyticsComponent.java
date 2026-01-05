@@ -124,13 +124,14 @@ class AnalyticsComponent {
                                 .toArray(Float[]::new);
 
                         ps.setString(1, document.id());
-                        ps.setString(2, document.text());
+                        ps.setTimestamp(2, Timestamp.valueOf(document.createDateTime()));
+                        ps.setString(3, document.text());
                         try {
-                            ps.setObject(3, mapper.writeValueAsString(embedding.getMetadata()), java.sql.Types.OTHER);
+                            ps.setObject(4, mapper.writeValueAsString(embedding.getMetadata()), java.sql.Types.OTHER);
                         } catch (Exception e) {
                             throw new SQLException("Failed to serialize metadata", e);
                         }
-                        ps.setArray(4, conn.createArrayOf("FLOAT", embeddingArray));
+                        ps.setArray(5, conn.createArrayOf("FLOAT", embeddingArray));
 
                     }
 
@@ -159,9 +160,10 @@ class AnalyticsComponent {
                     GisInfo document = gisInfos.get(i);
 
                     ps.setString(1, document.messageId());
-                    ps.setInt(2, document.srid());
-                    ps.setString(3, document.gis());
-                    ps.setString(4, document.reason());
+                    ps.setTimestamp(2, Timestamp.valueOf(document.createDateTime()));
+                    ps.setInt(3, document.srid());
+                    ps.setString(4, document.gis());
+                    ps.setString(5, document.reason());
 
                 }
 
