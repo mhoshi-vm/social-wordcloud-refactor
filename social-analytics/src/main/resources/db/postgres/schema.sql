@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS vector_store
     msg_timestamp    TIMESTAMP NOT NULL,
     content    TEXT,
     metadata   JSONB,  -- JSONB is faster and supports indexing better than JSON
-    embedding  REAL[], -- Postgres uses the [] syntax for arrays
+    embedding  VECTOR(1024),
     CONSTRAINT fk_vector_message
         FOREIGN KEY (message_id, msg_timestamp) REFERENCES social_message (id, create_date_time)
             ON DELETE CASCADE
@@ -88,36 +88,17 @@ CREATE TABLE IF NOT EXISTS gis_info
 
 --- 7. Timeseries DB
 -- Create continous aggregated view
-CREATE MATERIALIZED VIEW IF NOT EXISTS hourly_message_stats
-WITH (timescaledb.continuous) AS
-SELECT
-    time_bucket('1 hour', create_date_time) AS bucket,
-    origin,
-    COUNT(*) AS message_count
-FROM
-    social_message
-GROUP BY
-    bucket,
-    origin;
-
--- Set refresh policy
-SELECT add_continuous_aggregate_policy('hourly_message_stats',
-    start_offset => INTERVAL '3 hours',
-    end_offset => INTERVAL '1 hour',
-    schedule_interval => INTERVAL '30 minutes');
-
-
 CREATE OR REPLACE VIEW hourly_message AS
 SELECT
-    time_bucket_gapfill('1 hour', bucket) AS bucket,
+    time_bucket_gapfill('1 hour', bucket, now() - INTERVAL '1 month', now()) AS bucket,
     origin,
-    SUM(message_count) AS message_count -- Wrap this in SUM()
+    COALESCE(SUM(message_count), 0) AS message_count
 FROM
     hourly_message_stats
 WHERE
     bucket > now() - INTERVAL '1 month'
 GROUP BY
-    bucket,
+    bucket, -- This must match the gapfill logic
     origin
 ORDER BY
     bucket DESC;

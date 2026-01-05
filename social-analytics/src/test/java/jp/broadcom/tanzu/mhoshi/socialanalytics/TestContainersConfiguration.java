@@ -18,7 +18,7 @@ class TestContainersConfiguration {
     @ServiceConnection
     @RestartScope
     PostgreSQLContainer postgresContainer() {
-        return new PostgreSQLContainer(DockerImageName.parse("timescale/timescaledb-ha:pg16.6-ts2.18.0").asCompatibleSubstituteFor("postgres"))
+        return new PostgreSQLContainer(DockerImageName.parse("timescale/timescaledb-ha:pg15.15-ts2.24.0-all").asCompatibleSubstituteFor("postgres"))
                 .withEnv("POSTGRES_HOST_AUTH_METHOD", "trust")
 
                 .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*\\s", 2))
