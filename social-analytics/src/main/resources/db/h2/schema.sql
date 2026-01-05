@@ -72,3 +72,44 @@ CREATE TABLE IF NOT EXISTS gis_info
         FOREIGN KEY (message_id) REFERENCES social_message (id)
             ON DELETE CASCADE
 );
+
+--- 7. Timeseries DB
+CREATE ALIAS IF NOT EXISTS time_bucket AS '
+import java.sql.Timestamp;
+import java.time.temporal.ChronoUnit;
+@CODE
+Timestamp timeBucket(String bucket_width, Timestamp ts) {
+    long ms = ts.getTime();
+    if (bucket_width.equalsIgnoreCase("1 hour")) {
+        return new Timestamp((ms / 3600000) * 3600000);
+    }
+    return ts; // Fallback
+}
+';
+-- Standard View for H2 testing
+CREATE VIEW hourly_message_stats AS
+SELECT
+    DATE_TRUNC('HOUR', create_date_time) AS bucket,
+    origin,
+    COUNT(*) AS message_count
+FROM
+    social_message
+GROUP BY
+    bucket,
+    origin;
+
+--- 8. Stock price view
+CREATE VIEW daily_stock_price AS
+SELECT
+    CAST(create_date_time AS DATE) AS day,
+    name AS ticker,
+    AVG(CAST(text AS NUMERIC)) AS avg_price
+FROM
+    social_message
+WHERE
+    create_date_time > DATEADD('MONTH', -1, CURRENT_TIMESTAMP)
+    AND origin = 'stocksprice'
+GROUP BY
+    day, ticker
+ORDER BY
+    day DESC;

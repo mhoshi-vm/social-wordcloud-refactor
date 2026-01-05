@@ -63,14 +63,10 @@ class MastodonClientConfig {
 
     @Bean
     Function<List<MastodonTimelinesResponse>, List<SocialMessage>> convertMastodonTimelinesResponse() {
-        return (in) -> {
-
-            List<SocialMessage> socialMessages = in.stream()
-                    .map(s -> new SocialMessage(s.id(), "mastodon", s.content(), s.language(), s.account().display_name(),
-                            s.url(), s.created_at(), EventAction.INSERT))
-                    .toList();
-            return socialMessages;
-        };
+        return (in) -> in.stream()
+                .map(s -> new SocialMessage(s.id(), "mastodon", s.content(), s.language(), s.account().display_name(),
+                        s.url(), s.created_at()))
+                .toList();
     }
 
     List<MastodonTimelinesResponse> mastodonTimelinesResponses(MastodonClient mastodonClient,String hashTag, Integer limit, String sinceId, @Nullable String maxId) {

@@ -8,6 +8,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 @Configuration
 @EnableScheduling
 @EnableAsync
@@ -18,6 +21,17 @@ class AnalyticsConfig {
         final SqlGeneratorConfig config = SqlGeneratorConfig.newInstanceWithCustomizer(c ->
                 c.getDialect().setBindVariableRenderInstance(BindVariableRender.BuiltIn.SPRING_NAMED_PARAMETER));
         return new SqlGenerator(config);
+    }
+
+    @Bean
+    Consumer<List<SocialMessage>> messageConsumer(AnalyticsComponent analyticsComponent) {
+        return (in) -> {
+            analyticsComponent.insertSocialMessages(in);
+            analyticsComponent.updateTsvector();
+            analyticsComponent.updateVaderSentiment();
+            analyticsComponent.updateEmbeddings();
+            analyticsComponent.updateGuessGisInfo();
+        };
     }
 
 }

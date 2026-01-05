@@ -30,10 +30,6 @@ class MessageService {
         return new ArrayList<>(this.messageRepo.findAll(pageable).getContent());
     }
 
-    void saveAll(List<MessageEntity> messageEntities) {
-        messageRepo.saveAll(messageEntities);
-    }
-
     void delete(String id) {
         messageRepo.findById(id).ifPresent(messageRepo::delete);
     }

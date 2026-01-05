@@ -1,6 +1,5 @@
 package jp.broadcom.tanzu.mhoshi.socialcollector.apifylinkedin;
 
-import jp.broadcom.tanzu.mhoshi.socialcollector.shared.EventAction;
 import jp.broadcom.tanzu.mhoshi.socialcollector.shared.SocialMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +57,7 @@ class ApifyLinkedInClientConfig {
     Function<List<ApifyLinkedInResponse>, List<SocialMessage>> convertLinkedInResponse() {
         return (in) -> in.stream()
                 .map(s -> new SocialMessage(s.activity_id(), "linkedIn", s.text(), "en", s.author().name(),
-                        s.post_url(), LocalDateTime.ofInstant(s.posted_at().timestamp(), ZoneId.of("UTC")), EventAction.INSERT))
+                        s.post_url(), LocalDateTime.ofInstant(s.posted_at().timestamp(), ZoneId.of("UTC"))))
                 .toList();
     }
 

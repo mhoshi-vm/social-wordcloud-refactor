@@ -1,17 +1,18 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 CREATE EXTENSION IF NOT EXISTS plpython3u;
 CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS timescaledb;
 
 -- 1. Main Message Table
-CREATE TABLE IF NOT EXISTS social_message
-(
-    id               VARCHAR(64) PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS social_message (
+    id               VARCHAR(64),
     origin           VARCHAR(64),
     text             TEXT,
     lang             VARCHAR(2),
     name             TEXT,
     url              TEXT,
-    create_date_time TIMESTAMP
+    create_date_time TIMESTAMP NOT NULL,
+    PRIMARY KEY (id, create_date_time) -- PK must include the time column for Hypertables
 );
 
 -- 2. Sentiment Analysis (One-to-Many)
@@ -38,7 +39,6 @@ CREATE TABLE IF NOT EXISTS message_entity_tsvector
 );
 
 -- 4. Analytics Helpers
--- Postgres allows ORDER BY and LIMIT in Views
 CREATE MATERIALIZED VIEW term_frequency_entity AS
 SELECT ROW_NUMBER() OVER (ORDER BY nentry DESC) AS rank,
        word AS term,
@@ -79,8 +79,45 @@ CREATE TABLE IF NOT EXISTS gis_info
             ON DELETE CASCADE
 );
 
+--- 7. Timeseries DB
+-- Convert to Hypertable
+SELECT create_hypertable('social_message', 'create_date_time', if_not_exists => TRUE);
+CREATE MATERIALIZED VIEW hourly_stock_stats
+SELECT
+    time_bucket_gapfill('1 hour', create_date_time) AS bucket,
+    origin,
+    COUNT(*) AS message_count
+FROM
+    social_message
+WHERE
+    create_date_time >= now() - INTERVAL '1 month' -- Gapfill requires a time range
+GROUP BY
+    bucket,
+    origin
+ORDER BY
+    bucket DESC;
+
+--- 8. Stock price view
+SELECT
+    time_bucket_gapfill('1 day', create_date_time) AS day,
+    ticker,
+    -- locf (Last Observation Carried Forward) fills nulls with the previous day's price
+    locf(AVG(price)) AS avg_daily_price,
+    COALESCE(SUM(volume), 0) AS total_daily_volume
+FROM
+    social_message
+WHERE
+    create_date_time >= NOW() - INTERVAL '1 month'
+    AND create_date_time < NOW()
+    AND origin = 'stocksprice'
+GROUP BY
+    day, ticker
+ORDER BY
+    day DESC;
+
 -- Recommended Indexes for Analytics Performance
 CREATE INDEX IF NOT EXISTS idx_sentiment_lookup ON message_entity_sentiment (message_id, model_name);
 CREATE INDEX IF NOT EXISTS idx_tsvector_gin ON message_entity_tsvector USING GIN(word_vector);
 CREATE INDEX IF NOT EXISTS idx_term_freq_term ON term_frequency_entity (term);
 CREATE INDEX IF NOT EXISTS idx_gis_info_spatial ON gis_info USING GIST (geom);
+CREATE INDEX IF NOT EXISTS idx_vector_search ON vector_store USING hnsw (embedding vector_cosine_ops);

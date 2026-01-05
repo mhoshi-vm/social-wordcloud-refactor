@@ -16,6 +16,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -56,7 +57,8 @@ class AnalyticsComponent {
                 base + "updateEmbeddings_1.sql",
                 base + "updateEmbeddings_2.sql",
                 base + "updateGisInfo_1.sql",
-                base + "updateGisInfo_2.sql"
+                base + "updateGisInfo_2.sql",
+                base + "insertSocialMessage.sql"
         );
     }
 
@@ -171,6 +173,33 @@ class AnalyticsComponent {
         }
     }
 
+    void insertSocialMessages(List<SocialMessage> socialMessages) {
+        logger.debug("insertSocialMessages");
+
+        this.jdbcTemplate.batchUpdate(loadAsString(sqlScripts.insertSocialMessages), new BatchPreparedStatementSetter() {
+
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                SocialMessage document = socialMessages.get(i);
+
+                ps.setString(1, document.id());
+                ps.setString(2, document.origin());
+                ps.setString(3, document.text());
+                ps.setString(4, document.lang());
+                ps.setString(5, document.name());
+                ps.setString(6, document.url());
+                ps.setTimestamp(7, Timestamp.valueOf(document.createDateTime()));
+
+            }
+
+            @Override
+            public int getBatchSize() {
+                return socialMessages.size();
+            }
+        });
+
+    }
+
     private record SqlScripts(
             String createVaderSql,
             String createVaderScript,
@@ -180,7 +209,8 @@ class AnalyticsComponent {
             String updateEmbeddings_1,
             String updateEmbeddings_2,
             String updateGisInfo_1,
-            String updateGisInfo_2
+            String updateGisInfo_2,
+            String insertSocialMessages
     ) {
     }
 
