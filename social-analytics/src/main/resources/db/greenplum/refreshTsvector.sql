@@ -1,1 +1,0 @@
-REFRESH MATERIALIZED VIEW term_frequency_entity
