@@ -83,6 +83,11 @@
             <artifactId>spring-cloud-stream-test-binder</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -103,6 +108,15 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <!-- Exclude specific properties files, e.g., for 'dev' or 'prod' profiles -->
+                    <exclude>application-local.properties</exclude>
+                </excludes>
+            </resource>
+        </resources>
     </build>
 
 </project>
