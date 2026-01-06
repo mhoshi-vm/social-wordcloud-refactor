@@ -141,16 +141,24 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <excludes>
+                        <!-- This excludes the file ONLY when creating the JAR -->
+                        <exclude>application-local.properties</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <excludes>
-                    <!-- Exclude specific properties files, e.g., for 'dev' or 'prod' profiles -->
-                    <exclude>application-local.properties</exclude>
-                </excludes>
             </resource>
         </resources>
     </build>
+
 
 </project>

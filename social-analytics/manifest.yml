@@ -1,0 +1,15 @@
+---
+applications:
+  - name: social-analytics
+    buildpacks:
+      - java_buildpack_offline
+    memory: 1G
+    instances: 1
+    path: target/social-analytics-0.0.1-SNAPSHOT.jar
+    env:
+      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+      SPRING_PROFILES_ACTIVE: 'cf-greenplum'
+    services:
+      - rabbitmq-broker
+      - cpu-embeddings
+      - gpt-oss
