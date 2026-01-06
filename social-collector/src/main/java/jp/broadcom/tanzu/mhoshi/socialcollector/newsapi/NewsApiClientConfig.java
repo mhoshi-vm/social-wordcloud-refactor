@@ -67,7 +67,7 @@ class NewsApiClientConfig {
     Function<NewsApiResponse, List<SocialMessage>> convertNewsApiResponse(NewsApiProperties newsApiProperties) {
         return (in) -> in.articles().stream()
                 .map(s -> new SocialMessage(UUID.nameUUIDFromBytes(s.url().getBytes()).toString(), s.source().name(),
-                        String.format("Description :%s\nContent: %s", s.description(),s.content()), newsApiProperties.language(), s.author(), s.url(),
+                        String.format("%s\n%s", s.description(),s.content()), newsApiProperties.language(), s.author(), s.url(),
                         LocalDateTime.parse(s.publishedAt(), DateTimeFormatter.ISO_DATE_TIME)))
                 .toList();
     }

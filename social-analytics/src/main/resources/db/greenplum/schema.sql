@@ -45,11 +45,25 @@ CREATE TABLE IF NOT EXISTS message_entity_tsvector
 DISTRIBUTED BY (message_id);
 
 -- 4. Analytics Helpers
-CREATE OR REPLACE VIEW term_frequency_entity  AS
+CREATE OR REPLACE VIEW term_frequency_entity_month  AS
 SELECT ROW_NUMBER() OVER (ORDER BY nentry DESC) AS rank,
        word AS term,
        nentry AS count
-FROM ts_stat('SELECT word_vector FROM message_entity_tsvector')
+FROM ts_stat('SELECT word_vector FROM message_entity_tsvector WHERE msg_timestamp >= CURRENT_DATE - INTERVAL ''1 month''')
+ORDER BY nentry DESC;
+
+CREATE OR REPLACE VIEW term_frequency_entity_week  AS
+SELECT ROW_NUMBER() OVER (ORDER BY nentry DESC) AS rank,
+       word AS term,
+       nentry AS count
+FROM ts_stat('SELECT word_vector FROM message_entity_tsvector WHERE msg_timestamp >= CURRENT_DATE - INTERVAL ''1 week''')
+ORDER BY nentry DESC;
+
+CREATE OR REPLACE VIEW term_frequency_entity_day AS
+SELECT ROW_NUMBER() OVER (ORDER BY nentry DESC) AS rank,
+       word AS term,
+       nentry AS count
+FROM ts_stat('SELECT word_vector FROM message_entity_tsvector WHERE msg_timestamp >= CURRENT_DATE - INTERVAL ''1 day''')
 ORDER BY nentry DESC;
 
 --- 5. Vector Store
