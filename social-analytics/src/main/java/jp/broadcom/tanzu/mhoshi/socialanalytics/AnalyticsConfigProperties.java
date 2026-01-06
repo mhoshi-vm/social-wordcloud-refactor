@@ -7,15 +7,15 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 record AnalyticsConfigProperties(
         @DefaultValue("h2")
         String database,
-        @DefaultValue("15000")
+        @DefaultValue("3600000")
         Integer termFrequencyInterval,
-        @DefaultValue("15000")
+        @DefaultValue("3600000")
         Integer updateTsvectorInterval,
-        @DefaultValue("15000")
+        @DefaultValue("3600000")
         Integer updateVaderSentimentInterval,
-        @DefaultValue("60000")
+        @DefaultValue("3600000")
         Integer updateEmbeddingsInterval,
-        @DefaultValue("300000")
+        @DefaultValue("7200000")
         Integer updateGuessGisInfo
 ) {
 }
