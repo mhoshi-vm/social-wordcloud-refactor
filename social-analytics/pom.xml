@@ -114,6 +114,11 @@
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>io.pivotal.cfenv</groupId>
+            <artifactId>java-cfenv-boot-tanzu-genai</artifactId>
+            <version>3.5.0</version>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
