@@ -11,5 +11,5 @@ applications:
       SPRING_PROFILES_ACTIVE: 'cf-greenplum'
     services:
       - rabbitmq-broker
-      - cpu-embeddings
-      - gpt-oss
+      - on-prem-cpu
+      - greenplum

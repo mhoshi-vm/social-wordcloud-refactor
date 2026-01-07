@@ -2,6 +2,7 @@ package jp.broadcom.tanzu.mhoshi.socialanalytics;
 
 import jakarta.annotation.Nullable;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.stereotype.Service;
@@ -15,8 +16,8 @@ class AnalyticsAiService {
     ChatClient chatClient;
     EmbeddingModel embeddingModel;
 
-    AnalyticsAiService(ChatClient.Builder chatClientBuilder, EmbeddingModel embeddingModel) {
-        this.chatClient = chatClientBuilder.build();
+    AnalyticsAiService(ChatModel chatModel, EmbeddingModel embeddingModel) {
+        this.chatClient = ChatClient.create(chatModel);
         this.embeddingModel = embeddingModel;
     }
 
