@@ -43,7 +43,11 @@ WITH (
     compresstype = zstd,
     compresslevel = 3
 )
-DISTRIBUTED BY (message_id);
+DISTRIBUTED BY (message_id)
+PARTITION BY RANGE (msg_timestamp)
+(
+    DEFAULT PARTITION other
+);
 
 -- 3. Text Search Vectors
 CREATE TABLE IF NOT EXISTS message_entity_tsvector
@@ -59,7 +63,11 @@ WITH (
     compresstype = zstd,
     compresslevel = 3
 )
-DISTRIBUTED BY (message_id);
+DISTRIBUTED BY (message_id)
+PARTITION BY RANGE (msg_timestamp)
+(
+    DEFAULT PARTITION other
+);
 
 -- 4. Analytics Helpers
 CREATE OR REPLACE VIEW term_frequency_entity_month  AS
@@ -99,7 +107,11 @@ WITH (
     compresstype = zstd,
     compresslevel = 3
 )
-DISTRIBUTED BY (message_id);
+DISTRIBUTED BY (message_id)
+PARTITION BY RANGE (msg_timestamp)
+(
+    DEFAULT PARTITION other
+);
 
 --- 6. GIS Info
 CREATE TABLE IF NOT EXISTS gis_info
@@ -121,7 +133,11 @@ WITH (
     compresstype = zstd,
     compresslevel = 3
 )
-DISTRIBUTED BY (message_id);
+DISTRIBUTED BY (message_id)
+PARTITION BY RANGE (msg_timestamp)
+(
+    DEFAULT PARTITION other
+);
 
 --- 7. Aggregation Layer
 -- Greenplum 7 supports mv_maintain_mode=full

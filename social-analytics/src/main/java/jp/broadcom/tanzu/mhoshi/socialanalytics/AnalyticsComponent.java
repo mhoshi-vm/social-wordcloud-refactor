@@ -174,7 +174,9 @@ class AnalyticsComponent {
         }
     }
 
-    @Scheduled(cron = "${analytics.maintenance-cron}")
+
+    //@Scheduled(cron = "${analytics.maintenance-cron}")
+    @Scheduled(fixedRateString = "${analytics.update-guess-gis-info}")
     void dbMaintenance() {
         logger.debug("dbMaintenance");
         final MapSqlParameterSource params = new MapSqlParameterSource();
