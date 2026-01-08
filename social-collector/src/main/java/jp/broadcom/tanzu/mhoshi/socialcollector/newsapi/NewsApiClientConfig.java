@@ -11,6 +11,7 @@ import org.springframework.web.client.support.RestClientHttpServiceGroupConfigur
 import org.springframework.web.service.registry.ImportHttpServices;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -57,7 +58,8 @@ class NewsApiClientConfig {
             NewsApiResponse newsApiResponse = newsApiList(newsApiClient, newsApiProperties);
             if (!newsApiResponse.articles().isEmpty()) {
                 this.newsApiFrom = newsApiResponse.articles().getFirst().publishedAt();
-                offsetStoreRepository.save(new OffsetStore(CollectorType.NEWSAPI, this.newsApiFrom));
+                // Add a second from the published article to avoid the same coming
+                offsetStoreRepository.save(new OffsetStore(CollectorType.NEWSAPI, Instant.parse(this.newsApiFrom).plusSeconds(1).toString()));
             }
             return newsApiResponse;
         };
