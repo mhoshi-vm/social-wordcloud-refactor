@@ -1,0 +1,51 @@
+type Query {
+    # Update return type to Connection
+    # Add pagination args: first, after, last, before
+    socialMessages(
+        origin: String,
+        lang: String,
+        name: String,
+        sort: [String],
+        direction: Direction,
+        first: Int,
+        after: String,
+        last: Int,
+        before: String
+    ): SocialMessageConnection
+
+    socialMessage(id: ID!): SocialMessage
+}
+
+# --- Standard Connection Boilerplate ---
+
+type SocialMessageConnection {
+    edges: [SocialMessageEdge]
+    pageInfo: PageInfo
+}
+
+enum Direction {
+    ASC,
+    DESC
+}
+
+type SocialMessageEdge {
+    cursor: String
+    node: SocialMessage
+}
+
+type PageInfo {
+    hasPreviousPage: Boolean
+    hasNextPage: Boolean
+    startCursor: String
+    endCursor: String
+}
+
+type SocialMessage {
+    id: ID
+    origin: String
+    text: String
+    lang: String
+    name: String
+    url: String
+    createDateTime: String
+}
