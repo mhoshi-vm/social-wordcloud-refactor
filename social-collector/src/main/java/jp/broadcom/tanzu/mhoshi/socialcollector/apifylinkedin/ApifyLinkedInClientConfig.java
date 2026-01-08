@@ -10,6 +10,7 @@ import org.springframework.web.client.support.RestClientHttpServiceGroupConfigur
 import org.springframework.web.service.registry.ImportHttpServices;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -57,7 +58,7 @@ class ApifyLinkedInClientConfig {
     Function<List<ApifyLinkedInResponse>, List<SocialMessage>> convertLinkedInResponse() {
         return (in) -> in.stream()
                 .map(s -> new SocialMessage(s.activity_id(), "linkedIn", s.text(), "en", s.author().name(),
-                        s.post_url(), LocalDateTime.ofInstant(s.posted_at().timestamp(), ZoneId.of("UTC"))))
+                        s.post_url(), LocalDateTime.ofInstant(Instant.ofEpochMilli(s.posted_at().timestamp()), ZoneId.of("UTC"))))
                 .toList();
     }
 

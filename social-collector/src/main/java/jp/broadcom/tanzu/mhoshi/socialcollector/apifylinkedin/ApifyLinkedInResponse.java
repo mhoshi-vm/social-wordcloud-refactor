@@ -12,6 +12,6 @@ record ApifyLinkedInResponse(
     }
 
     record ApifyLinkedInResponsePostedAt(
-            Instant timestamp) {
+            Long timestamp) {
     }
 }
