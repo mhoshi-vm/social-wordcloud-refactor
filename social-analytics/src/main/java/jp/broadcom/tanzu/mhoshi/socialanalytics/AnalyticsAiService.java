@@ -1,6 +1,5 @@
 package jp.broadcom.tanzu.mhoshi.socialanalytics;
 
-import jakarta.annotation.Nullable;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.embedding.EmbeddingModel;

@@ -3,6 +3,7 @@ package jp.broadcom.tanzu.mhoshi.socialanalytics;
 import org.mybatis.scripting.thymeleaf.SqlGenerator;
 import org.mybatis.scripting.thymeleaf.SqlGeneratorConfig;
 import org.mybatis.scripting.thymeleaf.processor.BindVariableRender;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -14,6 +15,7 @@ import java.util.function.Consumer;
 @Configuration
 @EnableScheduling
 @EnableAsync
+@EnableConfigurationProperties(AnalyticsConfigProperties.class)
 class AnalyticsConfig {
 
     @Bean

@@ -27,14 +27,13 @@ import static jp.broadcom.tanzu.mhoshi.socialanalytics.FileLoader.loadSqlAsStrin
 @Async
 class AnalyticsComponent {
 
+    private static final Logger logger = LoggerFactory.getLogger(AnalyticsComponent.class);
     SqlScripts sqlScripts;
     JdbcClient jdbcClient;
     JdbcTemplate jdbcTemplate;
     SqlGenerator sqlGenerator;
     AnalyticsAiService analyticsAiService;
     AnalyticsConfigProperties analyticsConfigProperties;
-
-    private static final Logger logger = LoggerFactory.getLogger(AnalyticsComponent.class);
 
     AnalyticsComponent(JdbcClient jdbcClient, JdbcTemplate jdbcTemplate, SqlGenerator sqlGenerator, AnalyticsAiService analyticsAiService, AnalyticsConfigProperties analyticsConfigProperties) {
         this.sqlGenerator = sqlGenerator;
@@ -126,13 +125,12 @@ class AnalyticsComponent {
 
                         ps.setString(1, document.id());
                         ps.setTimestamp(2, Timestamp.valueOf(document.createDateTime()));
-                        ps.setString(3, document.text());
                         try {
-                            ps.setObject(4, mapper.writeValueAsString(embedding.getMetadata()), java.sql.Types.OTHER);
+                            ps.setObject(3, mapper.writeValueAsString(embedding.getMetadata()), java.sql.Types.OTHER);
                         } catch (Exception e) {
                             throw new SQLException("Failed to serialize metadata", e);
                         }
-                        ps.setArray(5, conn.createArrayOf("FLOAT", embeddingArray));
+                        ps.setArray(4, conn.createArrayOf("FLOAT", embeddingArray));
 
                     }
 
@@ -176,7 +174,7 @@ class AnalyticsComponent {
         }
     }
 
-    @Scheduled(fixedRateString = "${analytics.update-guess-gis-info}")
+    @Scheduled(cron = "${analytics.maintenance-cron}")
     void dbMaintenance() {
         logger.debug("dbMaintenance");
         final MapSqlParameterSource params = new MapSqlParameterSource();

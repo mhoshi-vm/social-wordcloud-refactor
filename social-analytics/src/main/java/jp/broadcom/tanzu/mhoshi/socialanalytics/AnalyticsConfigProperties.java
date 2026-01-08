@@ -16,6 +16,8 @@ record AnalyticsConfigProperties(
         @DefaultValue("3600000")
         Integer updateEmbeddingsInterval,
         @DefaultValue("7200000")
-        Integer updateGuessGisInfo
+        Integer updateGuessGisInfo,
+        @DefaultValue("0 15 1 * * 6")
+        String maintenanceCron
 ) {
 }
