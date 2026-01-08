@@ -57,9 +57,9 @@ class NewsApiClientConfig {
 
             NewsApiResponse newsApiResponse = newsApiList(newsApiClient, newsApiProperties);
             if (!newsApiResponse.articles().isEmpty()) {
-                this.newsApiFrom = newsApiResponse.articles().getFirst().publishedAt();
                 // Add a second from the published article to avoid the same coming
-                offsetStoreRepository.save(new OffsetStore(CollectorType.NEWSAPI, Instant.parse(this.newsApiFrom).plusSeconds(1).toString()));
+                this.newsApiFrom = Instant.parse(newsApiResponse.articles().getFirst().publishedAt()).plusSeconds(1).toString();
+                offsetStoreRepository.save(new OffsetStore(CollectorType.NEWSAPI, this.newsApiFrom));
             }
             return newsApiResponse;
         };
