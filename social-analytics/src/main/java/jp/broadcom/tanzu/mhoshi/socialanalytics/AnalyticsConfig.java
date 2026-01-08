@@ -26,11 +26,11 @@ class AnalyticsConfig {
     @Bean
     Consumer<List<SocialMessage>> messageConsumer(AnalyticsComponent analyticsComponent) {
         return (in) -> {
-            analyticsComponent.insertSocialMessages(in);
-            analyticsComponent.updateTsvector();
-            analyticsComponent.updateVaderSentiment();
-            analyticsComponent.updateEmbeddings();
-            analyticsComponent.updateGuessGisInfo();
+            if (!in.isEmpty()) {
+                analyticsComponent.insertSocialMessages(in);
+                analyticsComponent.updateTsvector();
+                analyticsComponent.updateVaderSentiment();
+            }
         };
     }
 

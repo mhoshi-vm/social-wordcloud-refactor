@@ -1,6 +1,5 @@
 package jp.broadcom.tanzu.mhoshi.socialanalytics;
 
-import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +15,6 @@ class TestContainersConfiguration {
 
     @Bean
     @ServiceConnection
-    @RestartScope
     PostgreSQLContainer postgresContainer() {
         return new PostgreSQLContainer(DockerImageName.parse("timescale/timescaledb-ha:pg15.15-ts2.24.0-all").asCompatibleSubstituteFor("postgres"))
                 .withEnv("POSTGRES_HOST_AUTH_METHOD", "trust")

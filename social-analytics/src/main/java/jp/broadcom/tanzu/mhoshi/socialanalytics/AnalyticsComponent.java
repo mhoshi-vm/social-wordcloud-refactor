@@ -58,7 +58,8 @@ class AnalyticsComponent {
                 base + "updateEmbeddings_2.sql",
                 base + "updateGisInfo_1.sql",
                 base + "updateGisInfo_2.sql",
-                base + "insertSocialMessage.sql"
+                base + "insertSocialMessage.sql",
+                base + "maintenance.sql"
         );
     }
 
@@ -175,6 +176,17 @@ class AnalyticsComponent {
         }
     }
 
+    @Scheduled(fixedRateString = "${analytics.update-guess-gis-info}")
+    void dbMaintenance() {
+        logger.debug("dbMaintenance");
+        final MapSqlParameterSource params = new MapSqlParameterSource();
+        String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.maintenance), params);
+
+        this.jdbcClient
+                .sql(sql)
+                .update();
+    }
+
     void insertSocialMessages(List<SocialMessage> socialMessages) {
         logger.debug("insertSocialMessages");
 
@@ -212,7 +224,8 @@ class AnalyticsComponent {
             String updateEmbeddings_2,
             String updateGisInfo_1,
             String updateGisInfo_2,
-            String insertSocialMessages
+            String insertSocialMessages,
+            String maintenance
     ) {
     }
 
