@@ -8,45 +8,32 @@ import org.springframework.graphql.data.query.ScrollSubrange;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Controller;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
 @Controller
 class SocialMessageController {
 
     SocialMessageRepository socialMessageRepository;
 
-    JdbcClient jdbcClient;
-
     SocialMessageController(SocialMessageRepository socialMessageRepository, JdbcClient jdbcClient) {
         this.socialMessageRepository = socialMessageRepository;
-        this.jdbcClient = jdbcClient;
     }
 
-    @MutationMapping
-    void deleteCustomBatch(@Argument List<String> ids, @Argument List<LocalDateTime> createDateTimes) {
-        String sql = """
-                CALL delete_social_message_batch(?,?)
-                """;
-        jdbcClient.sql(sql)
-                .param(1, ids.toArray(new String[0]))
-                .param(2, null)
-                .update();
-    }
+    @QueryMapping
+    Page<SocialMessage> socialMessages(
+            @Argument String origin,
+            @Argument String lang,
+            @Argument String name,
+            ScrollSubrange subrange,
+            Sort sort) {
 
-//    @QueryMapping
-//    Window<SocialMessage> socialMessages(ScrollSubrange subrange, Optional<Sort> sort) {
-//        ScrollPosition position = subrange.position().orElse(ScrollPosition.offset());
-//
-//        // 2. Extract the limit (how many items to fetch)
-//        Limit limit = Limit.of(subrange.count().orElse(10));
-//
-//        // 3. Define sorting if not provided by the client
-//        Sort finalSort = sort.orElse(Sort.by("create_date_time").ascending());
-//
-//        // 4. Return the Window from the repository
-//        return socialMessageRepository.findBy(limit, position, finalSort);
-//    }
+        Example<SocialMessage> example = Example.of(new SocialMessage(null, origin, null, lang, name, null, null ));
+
+        OffsetScrollPosition scrollPosition = (OffsetScrollPosition) subrange.position()
+                .orElse(ScrollPosition.offset());
+        int limit = subrange.count().orElse(10);
+        int offset = scrollPosition.isInitial() ? 0 : (int) (scrollPosition.getOffset() + 1);
+
+        PageRequest pageable = PageRequest.of(limit != 0 ? offset / limit : 0, limit, sort);
+        return socialMessageRepository.findAll(example, pageable);
+    }
 
 }
