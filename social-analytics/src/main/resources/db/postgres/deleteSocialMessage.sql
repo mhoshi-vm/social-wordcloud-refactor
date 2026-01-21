@@ -1,0 +1,1 @@
+DELETE FROM social_message WHERE id = ANY(?);

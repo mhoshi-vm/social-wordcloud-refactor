@@ -6,17 +6,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.embedding.Embedding;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SqlParameterValue;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.support.SqlArrayValue;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -24,7 +24,6 @@ import static jp.broadcom.tanzu.mhoshi.socialanalytics.FileLoader.loadAsString;
 import static jp.broadcom.tanzu.mhoshi.socialanalytics.FileLoader.loadSqlAsString;
 
 @Component
-@Async
 class AnalyticsComponent {
 
     private static final Logger logger = LoggerFactory.getLogger(AnalyticsComponent.class);
@@ -75,6 +74,7 @@ class AnalyticsComponent {
     }
 
     @Scheduled(fixedRateString = "${analytics.update-tsvector-interval}")
+    @Async
     void updateTsvector() {
         logger.debug("updateTsvector");
         final MapSqlParameterSource params = new MapSqlParameterSource();
@@ -90,6 +90,7 @@ class AnalyticsComponent {
     }
 
     @Scheduled(fixedRateString = "${analytics.update-vader-sentiment-interval}")
+    @Async
     void updateVaderSentiment() {
         logger.debug("updateVaderSentiment");
         final MapSqlParameterSource params = new MapSqlParameterSource();
@@ -101,6 +102,7 @@ class AnalyticsComponent {
     }
 
     @Scheduled(fixedRateString = "${analytics.update-embeddings-interval}")
+    @Async
     void updateEmbeddings() {
         logger.debug("updateEmbeddings");
         final MapSqlParameterSource params = new MapSqlParameterSource();
@@ -145,6 +147,7 @@ class AnalyticsComponent {
     }
 
     @Scheduled(fixedRateString = "${analytics.update-guess-gis-info}")
+    @Async
     void updateGuessGisInfo() {
         logger.debug("updateGuessGisInfo");
         final MapSqlParameterSource params = new MapSqlParameterSource();
@@ -177,6 +180,7 @@ class AnalyticsComponent {
 
 
     @Scheduled(cron = "${analytics.maintenance-cron}")
+    @Async
     void dbMaintenance() {
         logger.debug("dbMaintenance");
         final MapSqlParameterSource params = new MapSqlParameterSource();
@@ -220,6 +224,7 @@ class AnalyticsComponent {
         String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.deleteSocialMessages), params);
         this.jdbcClient
                 .sql(sql)
+                .param(new SqlArrayValue("VARCHAR", socialMessagesIds.toArray()))
                 .update();
     }
 

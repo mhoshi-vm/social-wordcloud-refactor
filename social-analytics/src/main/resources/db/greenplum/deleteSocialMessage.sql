@@ -1,0 +1,1 @@
+SELECT delete_social_message_batch(?);

@@ -168,41 +168,36 @@ DISTRIBUTED BY (ticker);
 --- Cleanup UDF since Greenplum doesn't support FK constraints
 -- SELECT delete_social_message_batch(
 --     ARRAY['id1', 'id2'],
---     ARRAY['2023-10-27 10:00:00+00'::timestamptz, '2023-10-27 11:00:00+00'::timestamptz]
 -- );
 CREATE OR REPLACE FUNCTION delete_social_message_batch(
-    p_message_ids VARCHAR[],
-    p_timestamps TIMESTAMPTZ[]
+    p_message_ids VARCHAR[]
 )
 RETURNS VOID AS '
 BEGIN
-    -- Prerequisite: Arrays must be of equal length.
-    -- We join the arrays to the tables to perform a bulk delete.
-
     -- 1. Delete from Sentiment
     DELETE FROM message_entity_sentiment AS t
-    USING unnest(p_message_ids, p_timestamps) AS input(id, ts)
-    WHERE t.message_id = input.id AND t.msg_timestamp = input.ts;
+    USING unnest(p_message_ids) AS input(id)
+    WHERE t.message_id = input.id;
 
     -- 2. Delete from TSVector
     DELETE FROM message_entity_tsvector AS t
-    USING unnest(p_message_ids, p_timestamps) AS input(id, ts)
-    WHERE t.message_id = input.id AND t.msg_timestamp = input.ts;
+    USING unnest(p_message_ids) AS input(id)
+    WHERE t.message_id = input.id;
 
     -- 3. Delete from Vector Store
     DELETE FROM vector_store AS t
-    USING unnest(p_message_ids, p_timestamps) AS input(id, ts)
-    WHERE t.message_id = input.id AND t.msg_timestamp = input.ts;
+    USING unnest(p_message_ids) AS input(id)
+    WHERE t.message_id = input.id;
 
     -- 4. Delete from GIS Info
     DELETE FROM gis_info AS t
-    USING unnest(p_message_ids, p_timestamps) AS input(id, ts)
-    WHERE t.message_id = input.id AND t.msg_timestamp = input.ts;
+    USING unnest(p_message_ids) AS input(id)
+    WHERE t.message_id = input.id;
 
-    -- 5. Delete from Parent
+    -- 5. Delete from Parent (Note: column is "id", not "message_id")
     DELETE FROM social_message AS t
-    USING unnest(p_message_ids, p_timestamps) AS input(id, ts)
-    WHERE t.id = input.id AND t.create_date_time = input.ts;
+    USING unnest(p_message_ids) AS input(id)
+    WHERE t.id = input.id;
 
 END;
 ' LANGUAGE plpgsql;
