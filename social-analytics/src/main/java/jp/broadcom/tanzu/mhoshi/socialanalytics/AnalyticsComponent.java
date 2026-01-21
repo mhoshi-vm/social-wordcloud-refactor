@@ -58,6 +58,7 @@ class AnalyticsComponent {
                 base + "updateGisInfo_1.sql",
                 base + "updateGisInfo_2.sql",
                 base + "insertSocialMessage.sql",
+                base + "deleteSocialMessage.sql",
                 base + "maintenance.sql"
         );
     }
@@ -213,6 +214,15 @@ class AnalyticsComponent {
 
     }
 
+    void deleteSocialMessages(List<String> socialMessagesIds) {
+        logger.debug("deleteSocialMessages");
+        final MapSqlParameterSource params = new MapSqlParameterSource();
+        String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.deleteSocialMessages), params);
+        this.jdbcClient
+                .sql(sql)
+                .update();
+    }
+
     private record SqlScripts(
             String createVaderSql,
             String createVaderScript,
@@ -224,6 +234,7 @@ class AnalyticsComponent {
             String updateGisInfo_1,
             String updateGisInfo_2,
             String insertSocialMessages,
+            String deleteSocialMessages,
             String maintenance
     ) {
     }
