@@ -1,14 +1,11 @@
 package jp.broadcom.tanzu.mhoshi.socialanalytics;
 
-import io.grpc.StatusException;
-import org.jspecify.annotations.Nullable;
 import org.mybatis.scripting.thymeleaf.SqlGenerator;
 import org.mybatis.scripting.thymeleaf.SqlGeneratorConfig;
 import org.mybatis.scripting.thymeleaf.processor.BindVariableRender;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.grpc.server.exception.GrpcExceptionHandler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
