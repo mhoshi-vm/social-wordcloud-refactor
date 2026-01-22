@@ -6,8 +6,13 @@ import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.ai.embedding.Embedding;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.task.SyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -15,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -23,7 +29,9 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @Import(TestContainersConfiguration.class)
 // Force the use of Postgres scripts to match the TestContainer environment
+@ContextConfiguration(classes = TestAsyncConfig.class)
 @TestPropertySource(properties = {
+        "database=postgres",
         "analytics.database=postgres",
         "spring.sql.init.mode=always",
         "spring.sql.init.schema-locations=classpath*:db/postgres/schema.sql",
@@ -143,5 +151,15 @@ class AnalyticsComponentTest {
         EmbeddingResponse response = new EmbeddingResponse(List.of(embedding));
 
         when(analyticsAiService.getEmbeddingResponse(anyList())).thenReturn(response);
+    }
+}
+
+@TestConfiguration
+class TestAsyncConfig {
+
+    // this will overwrite the default executor
+    @Bean
+    public Executor taskExecutor() {
+        return new SyncTaskExecutor();
     }
 }
