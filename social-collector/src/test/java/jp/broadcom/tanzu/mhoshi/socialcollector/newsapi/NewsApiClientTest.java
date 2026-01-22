@@ -71,7 +71,7 @@ class NewsApiClientTest {
         var offset = offsetStoreRepository.findById(CollectorType.NEWSAPI);
         assertThat(offset).isPresent();
         // 2023-10-01T10:00:00 + 1 second = 2023-10-01T10:00:01Z (Instant.toString representation)
-        assertThat(offset.get().getPointer()).isEqualTo("2023-10-01T10:00:01Z");
+        assertThat(offset.get().getPointer()).isEqualTo("2023-10-01T10:01:00Z");
     }
 
     @Test
