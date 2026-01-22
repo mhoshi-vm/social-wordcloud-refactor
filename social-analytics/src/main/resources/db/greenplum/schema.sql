@@ -1,6 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 CREATE EXTENSION IF NOT EXISTS plpython3u;
 CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS madlib;
 
 -- 1. Main Message Table
 CREATE TABLE IF NOT EXISTS social_message (
@@ -125,6 +126,12 @@ CREATE TABLE IF NOT EXISTS gis_info
     geom       GEOMETRY(Point, 4326) GENERATED ALWAYS AS (
         ST_GeomFromText(gis, 4326)
         ) STORED,
+    point_coords FLOAT8[] GENERATED ALWAYS AS (
+        ARRAY[
+            ST_X(ST_GeomFromText(gis, 4326)),
+            ST_Y(ST_GeomFromText(gis, 4326))
+        ]
+        ) STORED,
     PRIMARY KEY (message_id, msg_timestamp)
 )
 WITH (
@@ -138,6 +145,61 @@ PARTITION BY RANGE (msg_timestamp)
 (
     DEFAULT PARTITION other
 );
+
+--- Create function to calculate centroids with madlib
+CREATE TABLE IF NOT EXISTS gis_kmeans_result
+(
+    kmeanspp  madlib.kmeans_result
+)DISTRIBUTED REPLICATED;
+CREATE OR REPLACE FUNCTION train_and_refresh_clusters() RETURNS TEXT AS $$
+BEGIN
+    DELETE FROM gis_kmeans_result;
+    INSERT INTO gis_kmeans_result
+    SELECT madlib.kmeanspp(
+        'gis_info',  -- Input table
+        'point_coords',          -- Column with coordinates
+        5,                       -- k (Number of clusters)
+        'madlib.squared_dist_norm2', -- Distance metric
+        'madlib.avg',            -- Aggregation function
+        20,                      -- Max iterations
+        0.001                    -- Convergence threshold
+    );
+
+    RETURN 'Success: Model retrained and View refreshed.';
+END;
+$$ LANGUAGE plpgsql;
+
+--- Create GIS info table with madlib calculated centroids
+CREATE MATERIALIZED VIEW IF NOT EXISTS gis_info_w_centroids with(mv_maintain_mode=full)
+AS
+WITH defined_centers AS (
+    SELECT
+        idx AS cluster_id,
+        (kmeanspp).centroids[idx][1] AS lon,
+        (kmeanspp).centroids[idx][2] AS lat,
+        ST_SetSRID(ST_MakePoint((kmeanspp).centroids[idx][1], (kmeanspp).centroids[idx][2]), 4326) AS geom
+    FROM
+        gis_kmeans_result,
+        generate_series(1, array_upper((kmeanspp).centroids, 1)) AS idx
+    WHERE (kmeanspp).centroids IS NOT NULL
+)
+SELECT DISTINCT ON (g.message_id)
+    g.message_id,
+    g.msg_timestamp,
+    g.srid,
+    g.geom,
+    c.cluster_id,
+    ST_Distance(g.geom, c.geom) AS dist_to_center,
+    c.geom AS center_geom
+FROM
+    gis_info g
+    CROSS JOIN defined_centers c
+WHERE
+    g.geom IS NOT NULL
+ORDER BY
+    g.message_id,
+    ST_Distance(g.geom, c.geom) ASC
+DISTRIBUTED BY (message_id);
 
 --- 7. Aggregation Layer
 -- Greenplum 7 supports mv_maintain_mode=full
