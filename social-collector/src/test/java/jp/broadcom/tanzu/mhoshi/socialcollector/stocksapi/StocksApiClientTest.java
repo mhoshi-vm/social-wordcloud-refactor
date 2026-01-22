@@ -1,6 +1,7 @@
 package jp.broadcom.tanzu.mhoshi.socialcollector.stocksapi;
 
 
+import jp.broadcom.tanzu.mhoshi.socialcollector.TestContainersConfiguration;
 import jp.broadcom.tanzu.mhoshi.socialcollector.shared.SocialMessage;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -9,7 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
-import org.testcontainers.utility.TestcontainersConfiguration;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@Import(TestContainersConfiguration.class)
 class StocksApiClientTest {
 
     @MockitoBean

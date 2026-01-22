@@ -1,6 +1,7 @@
 package jp.broadcom.tanzu.mhoshi.socialcollector.mastodon;
 
 
+import jp.broadcom.tanzu.mhoshi.socialcollector.TestContainersConfiguration;
 import jp.broadcom.tanzu.mhoshi.socialcollector.shared.CollectorType;
 import jp.broadcom.tanzu.mhoshi.socialcollector.shared.OffsetStoreRepository;
 import jp.broadcom.tanzu.mhoshi.socialcollector.shared.SocialMessage;
@@ -11,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@Import(TestContainersConfiguration.class)
 class MastodonClientTest {
 
     @MockitoBean

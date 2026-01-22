@@ -8,17 +8,17 @@ import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @TestConfiguration(proxyBeanMethods = false)
-class TestcontainersConfiguration {
+public class TestContainersConfiguration {
 
     @Bean
     @ServiceConnection
-    RabbitMQContainer rabbitContainer() {
+    public RabbitMQContainer rabbitContainer() {
         return new RabbitMQContainer(DockerImageName.parse("rabbitmq:latest"));
     }
 
     @Bean
     @ServiceConnection
-    MySQLContainer mysqlContainer() {
+    public MySQLContainer mysqlContainer() {
         return new MySQLContainer(DockerImageName.parse("mysql:latest")).withReuse(true);
     }
 }

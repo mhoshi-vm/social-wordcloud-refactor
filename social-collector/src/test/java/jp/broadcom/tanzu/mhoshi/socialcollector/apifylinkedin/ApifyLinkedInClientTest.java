@@ -1,5 +1,6 @@
 package jp.broadcom.tanzu.mhoshi.socialcollector.apifylinkedin;
 
+import jp.broadcom.tanzu.mhoshi.socialcollector.TestContainersConfiguration;
 import jp.broadcom.tanzu.mhoshi.socialcollector.shared.SocialMessage;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -7,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@Import(TestContainersConfiguration.class)
 class ApifyLinkedInClientTest {
 
     @MockitoBean
