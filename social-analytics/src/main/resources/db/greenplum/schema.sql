@@ -151,23 +151,23 @@ CREATE TABLE IF NOT EXISTS gis_kmeans_result
 (
     kmeanspp  madlib.kmeans_result
 )DISTRIBUTED REPLICATED;
-CREATE OR REPLACE FUNCTION train_and_refresh_clusters() RETURNS TEXT AS $$
+CREATE OR REPLACE FUNCTION train_and_refresh_clusters() RETURNS TEXT AS '
 BEGIN
     DELETE FROM gis_kmeans_result;
     INSERT INTO gis_kmeans_result
     SELECT madlib.kmeanspp(
-        'gis_info',  -- Input table
-        'point_coords',          -- Column with coordinates
-        5,                       -- k (Number of clusters)
-        'madlib.squared_dist_norm2', -- Distance metric
-        'madlib.avg',            -- Aggregation function
-        20,                      -- Max iterations
-        0.001                    -- Convergence threshold
+        ''gis_info'',                  -- Input table
+        ''point_coords'',              -- Column with coordinates
+        5,                             -- k (Number of clusters)
+        ''madlib.squared_dist_norm2'', -- Distance metric
+        ''madlib.avg'',                -- Aggregation function
+        20,                            -- Max iterations
+        0.001                          -- Convergence threshold
     );
 
-    RETURN 'Success: Model retrained and View refreshed.';
+    RETURN ''Success: Model retrained and View refreshed.'';
 END;
-$$ LANGUAGE plpgsql;
+' LANGUAGE plpgsql;
 
 --- Create GIS info table with madlib calculated centroids
 CREATE MATERIALIZED VIEW IF NOT EXISTS gis_info_w_centroids with(mv_maintain_mode=full)

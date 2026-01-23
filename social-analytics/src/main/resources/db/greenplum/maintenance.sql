@@ -1,5 +1,8 @@
 VACUUM ANALYZE;
 
+--- Update gisCentroids
+SELECT train_and_refresh_clusters() ;
+
 -- Cleanup Orphans
 -- 1. Clean Sentiment
 DELETE FROM message_entity_sentiment

@@ -57,6 +57,7 @@ class AnalyticsComponent {
                 base + "updateEmbeddings_2.sql",
                 base + "updateGisInfo_1.sql",
                 base + "updateGisInfo_2.sql",
+                base + "refreshGisInfo.sql",
                 base + "insertSocialMessage.sql",
                 base + "deleteSocialMessage.sql",
                 base + "maintenance.sql"
@@ -176,6 +177,9 @@ class AnalyticsComponent {
                     return gisInfos.size();
                 }
             });
+            logger.info("gis updated, refresh");
+            String refreshSql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.refreshTsVector), params);
+            jdbcClient.sql(refreshSql).update();
         }
     }
 
@@ -239,6 +243,7 @@ class AnalyticsComponent {
             String updateEmbeddings_2,
             String updateGisInfo_1,
             String updateGisInfo_2,
+            String refreshGisInfo,
             String insertSocialMessages,
             String deleteSocialMessages,
             String maintenance
