@@ -166,6 +166,51 @@ class GreenplumIntegrationTest {
         }
     }
 
+    @Test
+    void testGisCentroidsCalculation() {
+        // 1. Seed 5 messages with different locations to meet the row_count >= 5 condition in maintenance.sql
+        // Locations: Tokyo, Osaka, Nagoya, Fukuoka, Sapporo
+        String[][] locations = {
+            {"Tokyo", "POINT(139.6917 35.6895)"},
+            {"Osaka", "POINT(135.5023 34.6937)"},
+            {"Nagoya", "POINT(136.9066 35.1815)"},
+            {"Fukuoka", "POINT(130.4017 33.5904)"},
+            {"Sapporo", "POINT(141.3545 43.0621)"}
+        };
+
+        for (int i = 0; i < locations.length; i++) {
+            String msgId = UUID.randomUUID().toString();
+            LocalDateTime now = LocalDateTime.now();
+
+            // Insert parent message
+            SocialMessage message = new SocialMessage(msgId, "GeoTest", "Location: " + locations[i][0], "en", "User", "url", now);
+            analyticsComponent.insertSocialMessages(List.of(message));
+
+            // Insert GIS info manually to simulate AI discovery
+            jdbcClient.sql("INSERT INTO gis_info (message_id, msg_timestamp, srid, gis, reason) VALUES (?, ?, 4326, ?, ?)")
+                    .params(msgId, now, locations[i][1], "Manual seed for " + locations[i][0])
+                    .update();
+        }
+
+        // 2. Execute Maintenance - This calls train_and_refresh_clusters() inside the SQL block
+        // based on the condition 'IF row_count >= 5' in maintenance.sql
+        analyticsComponent.dbMaintenance();
+
+        // 3. Verify centroids were defined in the results table
+        Integer centroidCount = jdbcClient.sql("SELECT array_upper((kmeanspp).centroids, 1) FROM gis_kmeans_result")
+                .query(Integer.class)
+                .single();
+        assertThat(centroidCount).as("Madlib should have generated 5 cluster centroids").isEqualTo(5);
+
+        // 4. Verify the Materialized View shows results
+        // This view joins gis_info with the defined centers
+        List<String> results = jdbcClient.sql("SELECT message_id FROM gis_info_w_centroids")
+                .query(String.class)
+                .list();
+
+        assertThat(results).as("Materialized view should be refreshed and contain data").hasSizeGreaterThanOrEqualTo(5);
+    }
+
     // --- Helpers ---
 
     private String seedStockMessage() {
