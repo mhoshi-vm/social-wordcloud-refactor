@@ -113,7 +113,7 @@ class GreenplumIntegrationTest {
 
         // Note: Java's 'MM' is month number. The SQL pattern 'mMM' implies 'm' literal + Month number.
         // Based on SQL: to_char(..., 'YYYY_mMM') -> 2026_m02
-        String partitionNamePattern = "social_message_y" + DateTimeFormatter.ofPattern("yyyy_mMM").format(nextMonth);
+        String partitionNamePattern = "social_message_y" + DateTimeFormatter.ofPattern("yyyy_'m'MM").format(nextMonth);
 
         // 3. Verify Partition Exists in Catalog
         Boolean partitionExists = jdbcClient.sql("SELECT EXISTS (SELECT 1 FROM pg_class WHERE relname = ?)")

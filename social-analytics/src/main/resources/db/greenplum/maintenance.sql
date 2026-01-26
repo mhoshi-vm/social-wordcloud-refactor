@@ -1,7 +1,20 @@
 VACUUM ANALYZE;
 
 --- Update gisCentroids
-SELECT train_and_refresh_clusters() ;
+DO $$
+DECLARE
+    row_count INTEGER;
+BEGIN
+    -- Replace 'your_table_name' with the actual table you are monitoring
+    SELECT count(*) INTO row_count FROM gis_info;
+
+    IF row_count >= 5 THEN
+        PERFORM train_and_refresh_clusters();
+        RAISE NOTICE 'Condition met: Function executed.';
+    ELSE
+        RAISE NOTICE 'Condition not met: Only % rows found.', row_count;
+    END IF;
+END $$;
 
 -- Cleanup Orphans
 -- 1. Clean Sentiment

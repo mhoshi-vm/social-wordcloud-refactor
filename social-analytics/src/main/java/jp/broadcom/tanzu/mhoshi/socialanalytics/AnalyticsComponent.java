@@ -230,7 +230,8 @@ class AnalyticsComponent {
         this.jdbcClient
                 .sql(sql)
                 .param(new SqlArrayValue("VARCHAR", socialMessagesIds.toArray()))
-                .update();
+                .query((rs, rowNum) -> null)
+                .list();
     }
 
     private record SqlScripts(
