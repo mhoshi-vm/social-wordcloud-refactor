@@ -214,17 +214,38 @@ DISTRIBUTED BY (origin);
 
 --- 8. Continuous Aggregate for Stock price
 CREATE MATERIALIZED VIEW IF NOT EXISTS daily_stock_metrics with(mv_maintain_mode=full) AS
+WITH date_grid AS (
+    -- Generate all days between the oldest and newest message
+    SELECT
+        date_trunc('day', series_date) AS bucket,
+        t.ticker
+    FROM
+        generate_series(
+            (SELECT min(create_date_time) FROM social_message WHERE origin = 'stocksprice'),
+            (SELECT max(create_date_time) FROM social_message WHERE origin = 'stocksprice'),
+            '1 day'::interval
+        ) AS series_date
+    CROSS JOIN (SELECT DISTINCT (text::jsonb) ->> 'ticker' AS ticker FROM social_message WHERE origin = 'stocksprice') t
+),
+raw_metrics AS (
+    -- Get the actual daily aggregates
+    SELECT
+        date_trunc('day', create_date_time) AS bucket,
+        (text::jsonb) ->> 'ticker' AS ticker,
+        AVG(((text::jsonb) ->> 'price')::NUMERIC) AS avg_price,
+        SUM(((text::jsonb) ->> 'volume')::BIGINT) AS total_volume
+    FROM social_message
+    WHERE origin = 'stocksprice'
+    GROUP BY 1, 2
+)
 SELECT
-    date_trunc('day', create_date_time) AS bucket,
-    (text::jsonb) ->> 'ticker' AS ticker,
-    AVG(((text::jsonb) ->> 'price')::NUMERIC) AS avg_price,
-    SUM(((text::jsonb) ->> 'volume')::BIGINT) AS total_volume
-FROM
-    social_message
-WHERE
-    origin = 'stocksprice'
-GROUP BY
-    bucket, ticker
+    dg.bucket,
+    dg.ticker,
+    -- Carry forward the last non-null value for price and volume
+    (array_remove(array_agg(rm.avg_price) OVER (PARTITION BY dg.ticker ORDER BY dg.bucket), NULL))[array_upper(array_remove(array_agg(rm.avg_price) OVER (PARTITION BY dg.ticker ORDER BY dg.bucket), NULL), 1)] AS avg_price,
+    (array_remove(array_agg(rm.total_volume) OVER (PARTITION BY dg.ticker ORDER BY dg.bucket), NULL))[array_upper(array_remove(array_agg(rm.total_volume) OVER (PARTITION BY dg.ticker ORDER BY dg.bucket), NULL), 1)] AS total_volume
+FROM date_grid dg
+LEFT JOIN raw_metrics rm ON dg.bucket = rm.bucket AND dg.ticker = rm.ticker
 DISTRIBUTED BY (ticker);
 
 --- Cleanup UDF since Greenplum doesn't support FK constraints

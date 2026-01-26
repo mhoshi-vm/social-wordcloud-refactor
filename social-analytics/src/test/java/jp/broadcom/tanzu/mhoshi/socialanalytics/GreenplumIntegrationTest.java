@@ -14,6 +14,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -209,6 +210,57 @@ class GreenplumIntegrationTest {
                 .list();
 
         assertThat(results).as("Materialized view should be refreshed and contain data").hasSizeGreaterThanOrEqualTo(5);
+    }
+
+    @Test
+    void testDailyStockMetricsGapFilling() {
+        // 1. Seed data with a gap (Jan 1st and Jan 3rd, skipping Jan 2nd)
+        String ticker = "AVGO";
+        LocalDateTime day1 = LocalDateTime.of(2026, 1, 1, 10, 0);
+        LocalDateTime day3 = LocalDateTime.of(2026, 1, 3, 10, 0);
+        LocalDate day2 = LocalDate.of(2026, 1, 2);
+
+        SocialMessage msgDay1 = new SocialMessage(
+                UUID.randomUUID().toString(),
+                "stocksprice",
+                "{\"ticker\":\"" + ticker + "\",\"price\":350.00,\"volume\":1000}",
+                "en", "Bot", "url", day1
+        );
+        SocialMessage msgDay3 = new SocialMessage(
+                UUID.randomUUID().toString(),
+                "stocksprice",
+                "{\"ticker\":\"" + ticker + "\",\"price\":360.00,\"volume\":2000}",
+                "en", "Bot", "url", day3
+        );
+
+        analyticsComponent.insertSocialMessages(List.of(msgDay1, msgDay3));
+
+        // 3. Verify Jan 2nd (the gap) exists and has Jan 1st's values (LOCF)
+        // We query the specific bucket for the missing day
+        var gapResult = jdbcClient.sql("""
+                    SELECT avg_price, total_volume 
+                    FROM daily_stock_metrics 
+                    WHERE ticker = ? AND bucket = ?
+                """)
+                .params(ticker, Timestamp.valueOf(day2.atStartOfDay()))
+                .query((rs, rowNum) -> new Object[] {
+                        rs.getDouble("avg_price"),
+                        rs.getLong("total_volume")
+                })
+                .single();
+
+        Double filledPrice = (Double) gapResult[0];
+        Long filledVolume = (Long) gapResult[1];
+
+        assertThat(filledPrice).as("Gap day should carry forward price from Jan 1st").isEqualTo(350.00);
+        assertThat(filledVolume).as("Gap day should carry forward volume from Jan 1st").isEqualTo(1000L);
+
+        // 4. Verify Jan 3rd has its own actual values
+        Double actualPriceDay3 = jdbcClient.sql("SELECT avg_price FROM daily_stock_metrics WHERE bucket = ?")
+                .param(Timestamp.valueOf(day3.truncatedTo(java.time.temporal.ChronoUnit.DAYS)))
+                .query(Double.class)
+                .single();
+        assertThat(actualPriceDay3).isEqualTo(360.00);
     }
 
     // --- Helpers ---
