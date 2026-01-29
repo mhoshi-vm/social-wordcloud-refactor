@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social & Market Analytics Dashboard</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/style.css">
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1 style="margin: 0 0 10px 0; font-size: 1.5rem;">Analytics Dashboard</h1>
+    </header>
+
+    <div class="dashboard-grid">
+
+        <section class="card map-card">
+            <h2 style="margin:0 0 10px 0; font-size: 1.2rem;">Message Origin Map</h2>
+            <div id="search-container">
+                <input type="text" id="search-input" placeholder="Search origins..." autocomplete="off">
+            </div>
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-header" style="display:flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h2 style="margin:0; font-size: 1.2rem;">AVGO Stock</h2>
+                    <small style="color: #637381">Broadcom Inc. • Daily Metrics</small>
+                </div>
+                <div class="controls" id="stock-controls">
+                    <button onclick="updateStockChart('1W', this)">1W</button>
+                    <button class="active" onclick="updateStockChart('1Y', this)">1Y</button>
+                </div>
+            </div>
+            <div style="flex-grow: 1; min-height: 0; position: relative;">
+                <canvas id="stockChart"></canvas>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2 style="margin:0 0 10px 0; font-size: 1.2rem;">Term Frequency Analysis</h2>
+            <div class="controls" id="cloud-controls">
+                <button onclick="updateCloud('daily', this)" class="active">Daily</button>
+                <button onclick="updateCloud('weekly', this)">Weekly</button>
+                <button onclick="updateCloud('monthly', this)">Monthly</button>
+            </div>
+            <div id="word-cloud" style="flex-grow:1; text-align: center;"></div>
+        </section>
+    </div>
+
+    <script src="src/widget-stock.js"></script>
+    <script src="src/widget-cloud.js"></script>
+    <script src="src/widget-map.js"></script>
+    <script src="src/main.js"></script>
+</body>
+</html>
