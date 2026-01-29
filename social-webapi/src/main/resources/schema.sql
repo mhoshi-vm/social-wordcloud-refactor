@@ -127,3 +127,16 @@ void delete_social_message_batch(Connection conn, String[] ids, Object[] timesta
     }
 }
 ';
+
+CREATE TABLE IF NOT EXISTS local_social_analysis (
+    message_id       VARCHAR(64) NOT NULL,
+    origin           VARCHAR(64),
+    url              TEXT,
+    text             TEXT,
+    sentiment_label  VARCHAR(20),
+    confidence_score REAL,
+    centroid_cluster_id INTEGER,
+    gis_point        VARCHAR(100),
+    create_date_time TIMESTAMP NOT NULL,
+    PRIMARY KEY (message_id, create_date_time)
+);
