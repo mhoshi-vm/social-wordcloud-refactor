@@ -248,6 +248,32 @@ FROM date_grid dg
 LEFT JOIN raw_metrics rm ON dg.bucket = rm.bucket AND dg.ticker = rm.ticker
 DISTRIBUTED BY (ticker);
 
+
+--- 9. Create aggregated view to show the full analysis
+CREATE OR REPLACE VIEW social_message_analysis AS
+SELECT
+    s.id AS message_id,
+    s.origin,
+    s.url,
+    sent.sentiment_label,
+    gc.cluster_id AS centroid_cluster_id,
+    s.create_date_time,
+    gc.geom
+FROM
+    social_message s
+-- Join with Sentiment Analysis table
+LEFT JOIN message_entity_sentiment sent
+    ON s.id = sent.message_id
+    AND s.create_date_time = sent.msg_timestamp
+-- INNER JOIN filters out records if gc (GIS info) does not exist
+INNER JOIN gis_info_w_centroids gc
+    ON s.id = gc.message_id
+    AND s.create_date_time = gc.msg_timestamp
+ORDER BY
+    s.create_date_time DESC
+LIMIT 1000;
+
+
 --- Cleanup UDF since Greenplum doesn't support FK constraints
 -- SELECT delete_social_message_batch(
 --     ARRAY['id1', 'id2'],

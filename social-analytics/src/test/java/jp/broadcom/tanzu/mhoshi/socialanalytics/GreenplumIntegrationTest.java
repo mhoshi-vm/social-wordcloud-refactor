@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -261,6 +262,88 @@ class GreenplumIntegrationTest {
                 .query(Double.class)
                 .single();
         assertThat(actualPriceDay3).isEqualTo(360.00);
+    }
+
+    @Test
+    void testSocialMessageAnalysisViewWithComponentLogic() {
+        // 1. Seed 5 messages with different locations to satisfy MADlib clustering (k=5)
+        // Only these 5 will have GIS info; others without GIS will be filtered by the INNER JOIN
+        String[][] locations = {
+            {"Tokyo Tower", "POINT(139.7454 35.6586)"},
+            {"Osaka Castle", "POINT(135.5262 34.6873)"},
+            {"Nagoya TV Tower", "POINT(136.9084 35.1715)"},
+            {"Fukuoka Tower", "POINT(130.3515 33.5932)"},
+            {"Sapporo Clock Tower", "POINT(141.3533 43.0625)"}
+        };
+
+        LocalDateTime now = LocalDateTime.now();
+        List<String> validIds = new java.util.ArrayList<>();
+
+        for (String[] loc : locations) {
+            String msgId = UUID.randomUUID().toString();
+            validIds.add(msgId);
+            SocialMessage msg = new SocialMessage(
+                msgId,
+                "GeoSource",
+                "Event happening at " + loc[0],
+                "en",
+                "User",
+                "http://example.com/" + msgId,
+                now
+            );
+            analyticsComponent.insertSocialMessages(List.of(msg));
+        }
+
+        // Seed a 6th message WITHOUT GIS info to test the INNER JOIN filtering
+        String msgIdNoGis = UUID.randomUUID().toString();
+        analyticsComponent.insertSocialMessages(List.of(
+            new SocialMessage(msgIdNoGis, "NoGeo", "Just text here.", "en", "User", "url", now.minusHours(1))
+        ));
+
+        // 2. Mock AI Responses for the 5 valid messages
+        List<GisInfo> mockGisResults = new java.util.ArrayList<>();
+        for (int i = 0; i < locations.length; i++) {
+            mockGisResults.add(new GisInfo(
+                validIds.get(i),
+                now,
+                4326,
+                locations[i][1],
+                "Found location in text: " + locations[i][0]
+            ));
+        }
+
+        // Ensure the AI service returns our 5 mock locations
+        when(analyticsAiService.getGisInfo(anyList())).thenReturn(mockGisResults);
+
+        // 3. Trigger Component Analysis Logic
+        analyticsComponent.updateTsvector();
+        analyticsComponent.updateVaderSentiment();
+        analyticsComponent.updateGuessGisInfo();
+
+        // 4. Refresh Materialized Views and train clusters via Maintenance
+        // This executes the MADlib kmeanspp logic because row_count >= 5
+        analyticsComponent.dbMaintenance();
+
+        // 5. Query the analysis view for the processed records
+        List<Map<String, Object>> viewResults = jdbcClient.sql("SELECT * FROM social_message_analysis")
+                .query().listOfRows();
+
+        // 6. Assertions
+        // The view should contain exactly 5 records (the one without GIS is filtered out)
+        assertThat(viewResults).hasSize(5);
+
+        for (Map<String, Object> row : viewResults) {
+            assertThat(row.get("sentiment_label")).isNotNull(); // From updateVaderSentiment
+            assertThat(row.get("centroid_cluster_id")).isNotNull(); // From MADlib clusters
+            assertThat(row.get("geom")).isNotNull(); // Verified GIS data exists
+        }
+
+        // Verify the message without GIS is indeed missing from the view
+        Boolean existsNoGis = jdbcClient.sql("SELECT EXISTS(SELECT 1 FROM social_message_analysis WHERE message_id = ?)")
+                .param(msgIdNoGis)
+                .query(Boolean.class)
+                .single();
+        assertThat(existsNoGis).isFalse();
     }
 
     // --- Helpers ---

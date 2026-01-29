@@ -26,7 +26,7 @@ class CfSecurityConfig {
     AuthenticationProcessInterceptor jwtSecurityFilterChain(GrpcSecurity grpc) throws Exception {
         return grpc
                 .authorizeRequests(requests -> requests
-                        .methods("Simple/SayHello").hasAnyAuthority("ROLE_APP")
+                        .methods("Delete/DeleteMessages").hasAnyAuthority("ROLE_APP")
                         .allRequests().permitAll())
                 .authenticationExtractor(new SslContextPreAuthenticationExtractor(new CfIdentityExtractor()))
                 .preauth(Customizer.withDefaults())
