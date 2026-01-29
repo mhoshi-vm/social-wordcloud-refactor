@@ -38,7 +38,27 @@ CREATE TABLE IF NOT EXISTS message_entity_tsvector
 
 -- 4. Analytics Helpers
 -- Note: ROW_NUMBER() and LIMIT are now correctly ordered for H2
-CREATE VIEW IF NOT EXISTS term_frequency_entity
+CREATE VIEW IF NOT EXISTS term_frequency_entity_day
+AS
+SELECT
+    ROW_NUMBER() OVER (ORDER BY create_date_time) AS rank,
+    LEFT(CAST(RANDOM_UUID() AS VARCHAR), 8)       AS term,
+    CAST(RAND() * 1000 AS INT)                    AS count
+FROM social_message
+ORDER BY create_date_time
+LIMIT 1000;
+
+CREATE VIEW IF NOT EXISTS term_frequency_entity_week
+AS
+SELECT
+    ROW_NUMBER() OVER (ORDER BY create_date_time) AS rank,
+    LEFT(CAST(RANDOM_UUID() AS VARCHAR), 8)       AS term,
+    CAST(RAND() * 1000 AS INT)                    AS count
+FROM social_message
+ORDER BY create_date_time
+LIMIT 1000;
+
+CREATE VIEW IF NOT EXISTS term_frequency_entity_month
 AS
 SELECT
     ROW_NUMBER() OVER (ORDER BY create_date_time) AS rank,
@@ -103,7 +123,7 @@ GROUP BY
     origin;
 
 --- 8. Stock price view
-CREATE VIEW daily_stock_view AS
+CREATE VIEW daily_stock_metrics AS
 SELECT
     CAST(create_date_time AS DATE) AS report_day,
     'AVGO' AS ticker,
@@ -114,21 +134,8 @@ WHERE create_date_time > DATEADD('MONTH', -1, CURRENT_TIMESTAMP)
 GROUP BY report_day, ticker
 ORDER BY report_day DESC;
 
---- h2 batch delete
-CREATE ALIAS delete_social_message_batch AS '
-import java.sql.*;
-@CODE
-void delete_social_message_batch(Connection conn, String[] ids, Object[] timestamps) throws SQLException {
-    String sql = "DELETE FROM social_message WHERE id IN (?)";
 
-    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setArray(1, conn.createArrayOf("varchar", ids));
-        ps.executeUpdate();
-    }
-}
-';
-
-CREATE TABLE IF NOT EXISTS local_social_analysis (
+CREATE TABLE IF NOT EXISTS social_message_analysis (
     message_id       VARCHAR(64) NOT NULL,
     origin           VARCHAR(64),
     url              TEXT,

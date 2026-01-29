@@ -1,11 +1,11 @@
 package jp.broadcom.tanzu.mhoshi.socialwebapi.termfrequency;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequestMapping("/term")
 class TermFrequencyController {
 
     TermFrequencyService termFrequencyService;
@@ -13,8 +13,8 @@ class TermFrequencyController {
         this.termFrequencyService = termFrequencyService;
     }
 
-    @GetMapping
-    List<TermFrequency> getTermFrequencyEntity(Duration duration) {
+    @GetMapping("{duration}")
+    List<TermFrequency> getTermFrequencyEntity(@PathVariable Duration duration) {
         if (duration != null) {
             if (duration.equals(Duration.DAY)){
                 return termFrequencyService.getTermFrequencyEntityDay();

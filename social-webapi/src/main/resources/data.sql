@@ -76,7 +76,7 @@ SELECT id, create_date_time,'4326', 'POINT(-78.5 38.0)', 'United States', '01010
 WHERE id NOT IN (SELECT message_id FROM message_entity_tsvector);
 
 
-INSERT INTO local_social_analysis (message_id, origin, url, text, sentiment_label, confidence_score, centroid_cluster_id, gis_point, create_date_time) VALUES
+INSERT INTO social_message_analysis (message_id, origin, url, text, sentiment_label, confidence_score, centroid_cluster_id, gis_point, create_date_time) VALUES
 ('m-001', 'NewsBot', 'http://url.com/1', 'Sunny in Tokyo', 'positive', 0.91, 1, 'POINT(139.69 35.68)', '2026-01-29 10:01:00'),
 ('m-002', 'MarketWatch', 'http://url.com/2', 'Osaka stocks steady', 'neutral', 0.52, 2, 'POINT(135.50 34.69)', '2026-01-29 10:02:00'),
 ('m-003', 'SocialFeed', 'http://url.com/3', 'Nagoya rain starts', 'negative', 0.78, 3, 'POINT(136.90 35.18)', '2026-01-29 10:03:00'),

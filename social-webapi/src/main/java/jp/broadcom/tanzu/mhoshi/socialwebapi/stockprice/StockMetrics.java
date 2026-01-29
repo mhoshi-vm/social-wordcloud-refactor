@@ -1,8 +1,12 @@
 package jp.broadcom.tanzu.mhoshi.socialwebapi.stockprice;
 
+import org.springframework.data.annotation.Id;
+
 import java.time.LocalDateTime;
 
+
 class StockMetrics {
+    @Id
     LocalDateTime bucket;
     String ticker;
     Float avgPrice;
