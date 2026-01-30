@@ -115,6 +115,11 @@
             <artifactId>testcontainers-rabbitmq</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>3.0.1</version> <!-- Check Maven central for the latest version -->
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

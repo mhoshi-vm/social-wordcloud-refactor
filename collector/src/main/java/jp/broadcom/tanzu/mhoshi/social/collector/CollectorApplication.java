@@ -1,13 +1,13 @@
-package jp.broadcom.tanzu.mhoshi.social.analytics;
+package jp.broadcom.tanzu.mhoshi.social.collector;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SocialAnalyticsApplication {
+public class CollectorApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SocialAnalyticsApplication.class, args);
+        SpringApplication.run(CollectorApplication.class, args);
     }
 
 }

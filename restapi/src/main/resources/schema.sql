@@ -125,14 +125,14 @@ GROUP BY
 --- 8. Stock price view
 CREATE VIEW daily_stock_metrics AS
 SELECT
-    CAST(create_date_time AS DATE) AS report_day,
+    CAST(create_date_time AS DATE) AS bucket,
     'AVGO' AS ticker,
     '500' AS avg_price
 FROM social_message
 WHERE create_date_time > DATEADD('MONTH', -1, CURRENT_TIMESTAMP)
   AND origin = 'stocksprice'
-GROUP BY report_day, ticker
-ORDER BY report_day DESC;
+GROUP BY bucket, ticker
+ORDER BY bucket DESC;
 
 
 CREATE TABLE IF NOT EXISTS social_message_analysis (

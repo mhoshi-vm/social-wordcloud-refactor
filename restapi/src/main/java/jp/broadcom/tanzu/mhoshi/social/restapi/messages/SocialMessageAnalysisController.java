@@ -1,4 +1,4 @@
-package jp.broadcom.tanzu.mhoshi.social.restapi.messages.analysis;
+package jp.broadcom.tanzu.mhoshi.social.restapi.messages;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
