@@ -1,0 +1,13 @@
+---
+applications:
+- name: log2gp
+  memory: 512M
+  buildpacks:
+    - ruby_buildpack
+    - binary_buildpack
+  command: bundle exec fluentd -c ./fluent.conf
+  env:
+    BUNDLE_WITHOUT: development:test
+  health-check-type: process
+  services:
+    - greenplum

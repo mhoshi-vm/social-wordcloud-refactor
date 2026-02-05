@@ -42,5 +42,5 @@ gpstop -u
 ```
 
 ```
-cf create-service credhub default greenplum -c '{"url": "", "password": "", "username": ""}' 
+cf create-service credhub default greenplum -c '{"url": "", "password": "", "username": "", "hostname":"", "database": ""}' 
 ```
