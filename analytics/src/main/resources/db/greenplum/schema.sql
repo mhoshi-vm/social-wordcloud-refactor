@@ -258,7 +258,7 @@ SELECT
     sent.sentiment_label,
     gc.cluster_id AS centroid_cluster_id,
     s.create_date_time,
-    gc.geom
+    g.gis
 FROM
     social_message s
 -- Join with Sentiment Analysis table
@@ -268,6 +268,9 @@ LEFT JOIN message_entity_sentiment sent
 -- INNER JOIN filters out records if gc (GIS info) does not exist
 INNER JOIN gis_info_w_centroids gc
     ON s.id = gc.message_id
+    AND s.create_date_time = gc.msg_timestamp
+INNER JOIN gis_info g
+    ON s.id = g.message_id
     AND s.create_date_time = gc.msg_timestamp
 ORDER BY
     s.create_date_time DESC
