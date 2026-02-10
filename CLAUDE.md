@@ -32,6 +32,7 @@ Code formatting is enforced using the Spring Java Format plugin.
 - Be sure to avoid circular references between classes and packages.
 - Don't use Lombok.
 - Don't use Google Guava.
+- Don't public the classes and constructors instead keep as package-private (no explict access modifier) if not absolutely needed.
 - When using Java records, follow the following example and write each value per line, and also disable formatter
 ```
 record ApifyLinkedInProperties(

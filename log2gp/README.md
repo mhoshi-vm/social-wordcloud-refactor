@@ -5,4 +5,7 @@ gpconfig -c shared_preload_libraries -v "`gpconfig -s shared_preload_libraries |
 gpstop -ar
 ```
 
-cf create-org-quota 100 --reserved-route-ports 100  
+```
+cf update-quota default --reserved-route-ports 10
+cf cups fluentd-drain -l syslog://tcp.app.tas.vpsmart.aws.lespaulstudioplus.info:25140
+```

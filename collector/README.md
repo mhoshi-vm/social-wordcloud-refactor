@@ -48,5 +48,5 @@ broker: credhub-broker
 ```
 
 ```
-cf create-service credhub default secret-store -c '{"newsapi-key": "", "mastodon-token": "", "apifylinkedin-token": "", "stocksapi-key": ""}' 
+    cf create-service credhub default secret-store -c '{"newsapi-key": "", "mastodon-token": "", "apifylinkedin-token": "", "stocksapi-key": ""}' 
 ```

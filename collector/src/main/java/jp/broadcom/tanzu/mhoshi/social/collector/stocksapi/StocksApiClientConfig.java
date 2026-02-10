@@ -1,7 +1,7 @@
 package jp.broadcom.tanzu.mhoshi.social.collector.stocksapi;
 
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.SocialMessage;
-import jp.broadcom.tanzu.mhoshi.socialcollector.shared.*;
+import jp.broadcom.tanzu.mhoshi.social.collector.shared.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

@@ -16,3 +16,4 @@ applications:
       - rabbitmq-broker
       - on-prem-cpu
       - greenplum
+      - fluentd-drain

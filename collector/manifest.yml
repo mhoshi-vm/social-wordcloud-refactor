@@ -13,3 +13,4 @@ applications:
       - offset-db
       - rabbitmq-broker
       - secret-store
+      - fluentd-drain

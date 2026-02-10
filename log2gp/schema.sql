@@ -3,6 +3,7 @@ CREATE EXTENSION IF NOT EXISTS pg_cron;
 CREATE TABLE syslog_entries (
     created_at TIMESTAMPTZ NOT NULL, -- RFC 5424 uses high-precision timestamps
     priority INTEGER,                -- The PRI value (Facility * 8 + Severity)
+    facility VARCHAR(50),
     source_host TEXT,
     app_name TEXT,
     proc_id TEXT,

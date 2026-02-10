@@ -4,7 +4,7 @@ import jp.broadcom.tanzu.mhoshi.social.collector.shared.CollectorType;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.OffsetStore;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.OffsetStoreRepository;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.SocialMessage;
-import jp.broadcom.tanzu.mhoshi.socialcollector.shared.*;
+import jp.broadcom.tanzu.mhoshi.social.collector.shared.*;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

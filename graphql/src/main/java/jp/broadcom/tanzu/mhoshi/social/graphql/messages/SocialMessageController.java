@@ -1,7 +1,5 @@
 package jp.broadcom.tanzu.mhoshi.social.graphql.messages;
 
-import jp.broadcom.tanzu.mhoshi.socialwebapi.messages.graphql.SocialMessage;
-import jp.broadcom.tanzu.mhoshi.socialwebapi.messages.graphql.SocialMessageRepository;
 import org.springframework.data.domain.*;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
