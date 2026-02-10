@@ -1,13 +1,17 @@
 package jp.broadcom.tanzu.mhoshi.social.restapi.notification;
 
 import jp.broadcom.tanzu.mhoshi.social.restapi.TestcontainersConfiguration;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.stream.binder.test.TestChannelBinderConfiguration;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
@@ -16,7 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Import({ TestcontainersConfiguration.class, TestChannelBinderConfiguration.class })
-@TestPropertySource(properties= {"database=postgres"})
+@TestPropertySource(properties = { "database=postgres" })
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class NotificationIntegrationTest {
 
 	@Autowired
@@ -107,4 +112,14 @@ class NotificationIntegrationTest {
 	// spring.cloud.function.definition=messageConsumer
 	// spring.cloud.stream.bindings.messageConsumer-in-0.destination=notification-input
 
+    @Autowired
+    JdbcClient jdbcClient;
+
+    @AfterAll
+    void tearDown() {
+        // Code to run once after all tests in this class are done
+        jdbcClient.sql("DELETE FROM social_message").update();
+        jdbcClient.sql("DELETE FROM social_message_analysis").update();
+        // Example: close a static resource or perform database cleanup
+    }
 }

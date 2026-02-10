@@ -15,21 +15,19 @@ import java.time.Duration;
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {
 
-    @Bean
-    @ServiceConnection
-    @RestartScope
-    PostgreSQLContainer postgresContainer() {
-        return new PostgreSQLContainer(DockerImageName.parse("postgres:latest"))
-                .withStartupCheckStrategy(
-                        new MinimumDurationRunningStartupCheckStrategy(Duration.ofSeconds(3))
-                );
-    }
+	@Bean
+	@ServiceConnection
+	@RestartScope
+	PostgreSQLContainer postgresContainer() {
+		return new PostgreSQLContainer(DockerImageName.parse("postgres:latest"))
+			.withStartupCheckStrategy(new MinimumDurationRunningStartupCheckStrategy(Duration.ofSeconds(3)));
+	}
 
-    @Bean
-    @ServiceConnection
-    @RestartScope
-    RabbitMQContainer rabbitContainer() {
-        return new RabbitMQContainer(DockerImageName.parse("rabbitmq:latest"));
-    }
+	@Bean
+	@ServiceConnection
+	@RestartScope
+	RabbitMQContainer rabbitContainer() {
+		return new RabbitMQContainer(DockerImageName.parse("rabbitmq:latest"));
+	}
 
 }

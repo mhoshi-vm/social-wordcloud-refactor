@@ -1,6 +1,5 @@
 package jp.broadcom.tanzu.mhoshi.social.restapi.messages;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +16,6 @@ class SocialMessageAnalysisController {
 		this.socialMessageAnalysisService = socialMessageAnalysisService;
 	}
 
-	@CrossOrigin
 	@GetMapping
 	List<SocialMessageAnalysis> getAll() {
 		return socialMessageAnalysisService.listAll();
