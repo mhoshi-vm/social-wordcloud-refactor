@@ -4,6 +4,16 @@ import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
 
-record SocialMessage(@Id String id, String origin, String text, String lang, String name, String url,
-		LocalDateTime createDateTime) {
+record SocialMessage(
+// @formatter:off
+		@Id
+		String id,
+		String origin,
+		String text,
+		String lang,
+		String name,
+		String url,
+		LocalDateTime createDateTime
+		// @formatter:on
+) {
 }

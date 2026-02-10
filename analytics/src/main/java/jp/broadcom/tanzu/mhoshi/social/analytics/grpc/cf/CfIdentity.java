@@ -8,7 +8,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Objects;
 
-record CfIdentity(CfCertificate cfCertificate, CfCertificate serverCertificate) implements UserDetails {
+record CfIdentity(
+// @formatter:off
+		CfCertificate cfCertificate,
+		CfCertificate serverCertificate
+		// @formatter:on
+) implements UserDetails {
 
 	public static CfIdentity of(String subject, CfCertificate serverCertificate) {
 		return new CfIdentity(new CfCertificate(subject), serverCertificate);

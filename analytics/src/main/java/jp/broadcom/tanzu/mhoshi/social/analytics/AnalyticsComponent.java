@@ -229,10 +229,23 @@ class AnalyticsComponent {
 			.list();
 	}
 
-	private record SqlScripts(String createVaderSql, String createVaderScript, String updateTsVector,
-			String refreshTsVector, String updateVader, String updateEmbeddings_1, String updateEmbeddings_2,
-			String updateGisInfo_1, String updateGisInfo_2, String refreshGisInfo, String insertSocialMessages,
-			String deleteSocialMessages, String maintenance) {
+	private record SqlScripts(
+	// @formatter:off
+			String createVaderSql,
+			String createVaderScript,
+			String updateTsVector,
+			String refreshTsVector,
+			String updateVader,
+			String updateEmbeddings_1,
+			String updateEmbeddings_2,
+			String updateGisInfo_1,
+			String updateGisInfo_2,
+			String refreshGisInfo,
+			String insertSocialMessages,
+			String deleteSocialMessages,
+			String maintenance
+			// @formatter:on
+	) {
 	}
 
 }

@@ -7,8 +7,17 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-record CfCertificate(String subject, @Nullable String appGuid, @Nullable String spaceGuid,
-		@Nullable String organizationGuid) {
+record CfCertificate(
+// @formatter:off
+		String subject,
+		@Nullable
+		String appGuid,
+		@Nullable
+		String spaceGuid,
+		@Nullable
+		String organizationGuid
+		// @formatter:on
+) {
 
 	private static final String UUID_REGEX = "([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})";
 
