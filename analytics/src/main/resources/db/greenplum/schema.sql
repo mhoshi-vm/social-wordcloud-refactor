@@ -258,7 +258,7 @@ SELECT
     sent.sentiment_label,
     gc.cluster_id AS centroid_cluster_id,
     s.create_date_time,
-    g.gis
+    g.gis AS gis_point
 FROM
     social_message s
 -- Join with Sentiment Analysis table
