@@ -1,1 +1,2 @@
-DELETE FROM social_message WHERE id = ANY(?);
+SELECT 1
+FROM OLD TABLE (DELETE FROM social_message WHERE id = ANY(?));

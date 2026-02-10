@@ -8,11 +8,11 @@
         <version>4.0.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>jp.broadcom.tanzu.mhoshi</groupId>
+    <groupId>jp.broadcom.tanzu.mhoshi.social</groupId>
     <artifactId>collector</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>social-collector</name>
-    <description>social-collector</description>
+    <name>collector</name>
+    <description>collector</description>
     <url/>
     <licenses>
         <license/>

@@ -11,9 +11,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,12 +27,8 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
-@Import(TestContainersConfiguration.class)
-// Force the use of Postgres scripts to match the TestContainer environment
 @ContextConfiguration(classes = TestAsyncConfig.class)
-@TestPropertySource(properties = { "database=postgres", "analytics.database=postgres", "spring.sql.init.mode=always",
-		"spring.sql.init.schema-locations=classpath*:db/postgres/schema.sql",
-		"spring.sql.init.data-locations=classpath*:db/postgres/data.sql" })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class AnalyticsComponentTest {
 
 	@Autowired

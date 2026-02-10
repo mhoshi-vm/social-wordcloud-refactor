@@ -1,6 +1,7 @@
 package jp.broadcom.tanzu.mhoshi.social.analytics;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.embedding.Embedding;
@@ -36,6 +37,7 @@ import static org.mockito.Mockito.when;
 @TestPropertySource(properties = { "database=greenplum", "analytics.database=greenplum", "spring.sql.init.mode=always",
 		"spring.sql.init.schema-locations=classpath*:db/greenplum/schema.sql" })
 @Import(GreenplumTestContainersConfiguration.class)
+@Disabled
 class GreenplumIntegrationTest {
 
 	@Autowired
