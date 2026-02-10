@@ -127,11 +127,10 @@ CREATE VIEW daily_stock_metrics AS
 SELECT
     CAST(create_date_time AS DATE) AS bucket,
     'AVGO' AS ticker,
-    AVG(CAST(JSON_VALUE(text, '$.price') AS DOUBLE)) AS avg_price
+    '500' AS avg_price
 FROM social_message
-WHERE create_date_time > DATEADD('YEAR', -1, CURRENT_TIMESTAMP)
+WHERE create_date_time > DATEADD('MONTH', -1, CURRENT_TIMESTAMP)
   AND origin = 'stocksprice'
-  AND JSON_VALUE(text, '$.ticker') = 'AVGO'
 GROUP BY bucket, ticker
 ORDER BY bucket DESC;
 
@@ -144,7 +143,7 @@ CREATE TABLE IF NOT EXISTS social_message_analysis (
     sentiment_label  VARCHAR(20),
     confidence_score REAL,
     centroid_cluster_id INTEGER,
-    geom        VARCHAR(100),
+    gis_point        VARCHAR(100),
     create_date_time TIMESTAMP NOT NULL,
     PRIMARY KEY (message_id, create_date_time)
 );
