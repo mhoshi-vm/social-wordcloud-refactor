@@ -11,15 +11,16 @@ import java.util.List;
 @RequestMapping("/stocks")
 class StockMetricsController {
 
-    StockMetricsService stockMetricsService;
-    StockMetricsController(StockMetricsService stockMetricsService) {
-        this.stockMetricsService = stockMetricsService;
-    }
+	StockMetricsService stockMetricsService;
 
-    @CrossOrigin
-    @GetMapping
-    List<StockMetrics> getStockMetrics() {
-        return stockMetricsService.getStockMetrics();
-    }
+	StockMetricsController(StockMetricsService stockMetricsService) {
+		this.stockMetricsService = stockMetricsService;
+	}
+
+	@CrossOrigin
+	@GetMapping
+	List<StockMetrics> getStockMetrics() {
+		return stockMetricsService.getStockMetrics();
+	}
 
 }

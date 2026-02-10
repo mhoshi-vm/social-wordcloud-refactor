@@ -8,8 +8,8 @@ import org.springframework.web.service.annotation.HttpExchange;
 @HttpExchange
 interface StocksApiClient {
 
-    @Retryable(maxRetries = 1)
-    @GetExchange(url="/v1/stockprice", accept = "application/json")
-    StockPriceResponse getStockPriceResponses(
-            @RequestParam String ticker);
+	@Retryable(maxRetries = 1)
+	@GetExchange(url = "/v1/stockprice", accept = "application/json")
+	StockPriceResponse getStockPriceResponses(@RequestParam String ticker);
+
 }

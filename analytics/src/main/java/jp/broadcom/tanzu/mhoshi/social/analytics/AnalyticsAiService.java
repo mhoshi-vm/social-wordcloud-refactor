@@ -11,29 +11,34 @@ import java.util.List;
 
 @Service
 class AnalyticsAiService {
-    final static String GET_GIS_PROMPT = "ai/prompts/getGisInfo.txt";
-    ChatClient chatClient;
-    EmbeddingModel embeddingModel;
 
-    AnalyticsAiService(ChatModel chatModel, EmbeddingModel embeddingModel) {
-        this.chatClient = ChatClient.create(chatModel);
-        this.embeddingModel = embeddingModel;
-    }
+	final static String GET_GIS_PROMPT = "ai/prompts/getGisInfo.txt";
 
-    EmbeddingResponse getEmbeddingResponse(List<String> messages) {
-        return this.embeddingModel.embedForResponse(messages);
-    }
+	ChatClient chatClient;
 
-    List<GisInfo> getGisInfo(List<String> messages) {
-        List<GisInfo> gisInfos = new ArrayList<>();
-        messages.forEach(message -> {
-            GisInfo gisInfo = chatClient.prompt().user(u -> u.text(FileLoader.loadAsString(GET_GIS_PROMPT)).param("message", message))
-                    .call()
-                    .entity(GisInfo.class);
-            if (gisInfo != null) {
-                gisInfos.add(gisInfo);
-            }
-        });
-        return gisInfos;
-    }
+	EmbeddingModel embeddingModel;
+
+	AnalyticsAiService(ChatModel chatModel, EmbeddingModel embeddingModel) {
+		this.chatClient = ChatClient.create(chatModel);
+		this.embeddingModel = embeddingModel;
+	}
+
+	EmbeddingResponse getEmbeddingResponse(List<String> messages) {
+		return this.embeddingModel.embedForResponse(messages);
+	}
+
+	List<GisInfo> getGisInfo(List<String> messages) {
+		List<GisInfo> gisInfos = new ArrayList<>();
+		messages.forEach(message -> {
+			GisInfo gisInfo = chatClient.prompt()
+				.user(u -> u.text(FileLoader.loadAsString(GET_GIS_PROMPT)).param("message", message))
+				.call()
+				.entity(GisInfo.class);
+			if (gisInfo != null) {
+				gisInfos.add(gisInfo);
+			}
+		});
+		return gisInfos;
+	}
+
 }

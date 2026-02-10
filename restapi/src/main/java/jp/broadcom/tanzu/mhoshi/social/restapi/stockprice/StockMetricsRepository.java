@@ -10,6 +10,7 @@ import java.util.List;
 @Repository
 interface StockMetricsRepository extends CrudRepository<StockMetrics, LocalDateTime> {
 
-    @Query("select * from daily_stock_metrics")
-    List<StockMetrics> getStockMetrics();
+	@Query("select * from daily_stock_metrics")
+	List<StockMetrics> getStockMetrics();
+
 }

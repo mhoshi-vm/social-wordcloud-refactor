@@ -7,12 +7,14 @@ import java.util.List;
 @Service
 class SocialMessageAnalysisService {
 
-    SocialMessageAnalysisRepo socialMessageAnalysisRepo;
-    SocialMessageAnalysisService(SocialMessageAnalysisRepo socialMessageAnalysisRepo) {
-        this.socialMessageAnalysisRepo = socialMessageAnalysisRepo;
-    }
+	SocialMessageAnalysisRepo socialMessageAnalysisRepo;
 
-    List<SocialMessageAnalysis> listAll() {
-        return socialMessageAnalysisRepo.findAll();
-    }
+	SocialMessageAnalysisService(SocialMessageAnalysisRepo socialMessageAnalysisRepo) {
+		this.socialMessageAnalysisRepo = socialMessageAnalysisRepo;
+	}
+
+	List<SocialMessageAnalysis> listAll() {
+		return socialMessageAnalysisRepo.findAll();
+	}
+
 }

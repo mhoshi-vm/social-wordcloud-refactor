@@ -11,10 +11,8 @@ import java.util.List;
 @HttpExchange()
 interface ApifyLinkedInClient {
 
-    @PostExchange(url = "/v2/acts/{appId}/run-sync-get-dataset-items", accept = "application/json")
-    List<ApifyLinkedInResponse> apifyLinkedInResponses(
-            @PathVariable String appId,
-            @RequestParam String token,
-            @RequestBody ApifyLinkedInRequest body
-    );
+	@PostExchange(url = "/v2/acts/{appId}/run-sync-get-dataset-items", accept = "application/json")
+	List<ApifyLinkedInResponse> apifyLinkedInResponses(@PathVariable String appId, @RequestParam String token,
+			@RequestBody ApifyLinkedInRequest body);
+
 }

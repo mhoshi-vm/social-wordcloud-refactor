@@ -12,28 +12,27 @@ import java.util.List;
 @Service
 class AnalyticsGrpcService extends DeleteGrpc.DeleteImplBase {
 
-    AnalyticsComponent analyticsComponent;
+	AnalyticsComponent analyticsComponent;
 
-    AnalyticsGrpcService(AnalyticsComponent analyticsComponent) {
-        this.analyticsComponent = analyticsComponent;
-    }
+	AnalyticsGrpcService(AnalyticsComponent analyticsComponent) {
+		this.analyticsComponent = analyticsComponent;
+	}
 
-    @Override
-    public void deleteMessages(DeleteRequest request, StreamObserver<DeleteReply> responseObserver) {
-        List<String> ids = request.getIdsList();
-        try {
-            analyticsComponent.deleteSocialMessages(ids);
-        } catch (Exception e) {
-            responseObserver.onError(
-                    Status.INTERNAL
-                            .withDescription("Delete failed: " + e.getMessage())
-                            .withCause(e)
-                            .asRuntimeException()
-            );
-            return;
-        }
-        DeleteReply reply = DeleteReply.newBuilder().setMessage("Deleted").build();
-        responseObserver.onNext(reply);
-        responseObserver.onCompleted();
-    }
+	@Override
+	public void deleteMessages(DeleteRequest request, StreamObserver<DeleteReply> responseObserver) {
+		List<String> ids = request.getIdsList();
+		try {
+			analyticsComponent.deleteSocialMessages(ids);
+		}
+		catch (Exception e) {
+			responseObserver.onError(Status.INTERNAL.withDescription("Delete failed: " + e.getMessage())
+				.withCause(e)
+				.asRuntimeException());
+			return;
+		}
+		DeleteReply reply = DeleteReply.newBuilder().setMessage("Deleted").build();
+		responseObserver.onNext(reply);
+		responseObserver.onCompleted();
+	}
+
 }

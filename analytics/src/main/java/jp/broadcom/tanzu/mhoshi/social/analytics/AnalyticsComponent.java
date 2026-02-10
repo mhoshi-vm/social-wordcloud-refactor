@@ -27,228 +27,212 @@ import static jp.broadcom.tanzu.mhoshi.social.analytics.FileLoader.loadSqlAsStri
 @Component
 class AnalyticsComponent {
 
-    private static final Logger logger = LoggerFactory.getLogger(AnalyticsComponent.class);
-    SqlScripts sqlScripts;
-    JdbcClient jdbcClient;
-    JdbcTemplate jdbcTemplate;
-    SqlGenerator sqlGenerator;
-    AnalyticsAiService analyticsAiService;
-    AnalyticsConfigProperties analyticsConfigProperties;
+	private static final Logger logger = LoggerFactory.getLogger(AnalyticsComponent.class);
 
-    AnalyticsComponent(JdbcClient jdbcClient, JdbcTemplate jdbcTemplate, SqlGenerator sqlGenerator, AnalyticsAiService analyticsAiService, AnalyticsConfigProperties analyticsConfigProperties) {
-        this.sqlGenerator = sqlGenerator;
-        this.jdbcTemplate = jdbcTemplate;
-        this.jdbcClient = jdbcClient;
-        this.analyticsConfigProperties = analyticsConfigProperties;
-        this.analyticsAiService = analyticsAiService;
-        this.sqlScripts = createScriptPaths(analyticsConfigProperties.database());
-        createVaderSentimentFunction();
-    }
+	SqlScripts sqlScripts;
 
-    private static SqlScripts createScriptPaths(String db) {
-        String base = "db/" + db + "/";
-        return new SqlScripts(
-                base + "vaderSentimentFunction.sql",
-                base + "vaderSentimentFunction.py",
-                base + "updateTsvector.sql",
-                base + "refreshTsvector.sql",
-                base + "updateVaderSentiment.sql",
-                base + "updateEmbeddings_1.sql",
-                base + "updateEmbeddings_2.sql",
-                base + "updateGisInfo_1.sql",
-                base + "updateGisInfo_2.sql",
-                base + "refreshGisInfo.sql",
-                base + "insertSocialMessage.sql",
-                base + "deleteSocialMessage.sql",
-                base + "maintenance.sql"
-        );
-    }
+	JdbcClient jdbcClient;
 
-    void createVaderSentimentFunction() {
-        logger.debug("createVaderSentimentFunction");
-        final MapSqlParameterSource params = new MapSqlParameterSource();
-        String plpythonscript = loadAsString(sqlScripts.createVaderScript());
-        params.addValue("plpythonscript", plpythonscript);
-        final String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.createVaderSql), params.getValues());
-        this.jdbcClient
-                .sql(sql)
-                .update();
-    }
+	JdbcTemplate jdbcTemplate;
 
-    @Scheduled(fixedRateString = "${analytics.update-tsvector-interval}")
-    @Async
-    void updateTsvector() {
-        logger.debug("updateTsvector");
-        final MapSqlParameterSource params = new MapSqlParameterSource();
-        String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateTsVector), params);
+	SqlGenerator sqlGenerator;
 
-        int rowsInserted = this.jdbcClient.sql(sql).update();
+	AnalyticsAiService analyticsAiService;
 
-        if (rowsInserted > 0) {
-            logger.info("Tsvector updated, refresh");
-            String refreshSql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.refreshTsVector), params);
-            jdbcClient.sql(refreshSql).update();
-        }
-    }
+	AnalyticsConfigProperties analyticsConfigProperties;
 
-    @Scheduled(fixedRateString = "${analytics.update-vader-sentiment-interval}")
-    @Async
-    void updateVaderSentiment() {
-        logger.debug("updateVaderSentiment");
-        final MapSqlParameterSource params = new MapSqlParameterSource();
-        String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateVader), params);
+	AnalyticsComponent(JdbcClient jdbcClient, JdbcTemplate jdbcTemplate, SqlGenerator sqlGenerator,
+			AnalyticsAiService analyticsAiService, AnalyticsConfigProperties analyticsConfigProperties) {
+		this.sqlGenerator = sqlGenerator;
+		this.jdbcTemplate = jdbcTemplate;
+		this.jdbcClient = jdbcClient;
+		this.analyticsConfigProperties = analyticsConfigProperties;
+		this.analyticsAiService = analyticsAiService;
+		this.sqlScripts = createScriptPaths(analyticsConfigProperties.database());
+		createVaderSentimentFunction();
+	}
 
-        this.jdbcClient
-                .sql(sql)
-                .update();
-    }
+	private static SqlScripts createScriptPaths(String db) {
+		String base = "db/" + db + "/";
+		return new SqlScripts(base + "vaderSentimentFunction.sql", base + "vaderSentimentFunction.py",
+				base + "updateTsvector.sql", base + "refreshTsvector.sql", base + "updateVaderSentiment.sql",
+				base + "updateEmbeddings_1.sql", base + "updateEmbeddings_2.sql", base + "updateGisInfo_1.sql",
+				base + "updateGisInfo_2.sql", base + "refreshGisInfo.sql", base + "insertSocialMessage.sql",
+				base + "deleteSocialMessage.sql", base + "maintenance.sql");
+	}
 
-    @Scheduled(fixedRateString = "${analytics.update-embeddings-interval}")
-    @Async
-    void updateEmbeddings() {
-        logger.debug("updateEmbeddings");
-        final MapSqlParameterSource params = new MapSqlParameterSource();
-        String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateEmbeddings_1), params);
-        final List<SocialMessage> messages = this.jdbcClient.sql(sql).query(SocialMessage.class).list();
-        if (!messages.isEmpty()) {
-            List<Embedding> embeddings = analyticsAiService.getEmbeddingResponse(messages.stream().map(SocialMessage::text).toList()).getResults();
+	void createVaderSentimentFunction() {
+		logger.debug("createVaderSentimentFunction");
+		final MapSqlParameterSource params = new MapSqlParameterSource();
+		String plpythonscript = loadAsString(sqlScripts.createVaderScript());
+		params.addValue("plpythonscript", plpythonscript);
+		final String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.createVaderSql), params.getValues());
+		this.jdbcClient.sql(sql).update();
+	}
 
-            if (messages.size() == embeddings.size()) {
-                this.jdbcTemplate.batchUpdate(loadAsString(sqlScripts.updateEmbeddings_2), new BatchPreparedStatementSetter() {
+	@Scheduled(fixedRateString = "${analytics.update-tsvector-interval}")
+	@Async
+	void updateTsvector() {
+		logger.debug("updateTsvector");
+		final MapSqlParameterSource params = new MapSqlParameterSource();
+		String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateTsVector), params);
 
-                    private static final ObjectMapper mapper = new ObjectMapper();
+		int rowsInserted = this.jdbcClient.sql(sql).update();
 
-                    @Override
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        SocialMessage document = messages.get(i);
-                        Embedding embedding = embeddings.get(i);
+		if (rowsInserted > 0) {
+			logger.info("Tsvector updated, refresh");
+			String refreshSql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.refreshTsVector), params);
+			jdbcClient.sql(refreshSql).update();
+		}
+	}
 
-                        Connection conn = ps.getConnection();
-                        Float[] embeddingArray = IntStream.range(0, embedding.getOutput().length)
-                                .mapToObj(j -> embedding.getOutput()[j])
-                                .toArray(Float[]::new);
+	@Scheduled(fixedRateString = "${analytics.update-vader-sentiment-interval}")
+	@Async
+	void updateVaderSentiment() {
+		logger.debug("updateVaderSentiment");
+		final MapSqlParameterSource params = new MapSqlParameterSource();
+		String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateVader), params);
 
-                        ps.setString(1, document.id());
-                        ps.setTimestamp(2, Timestamp.valueOf(document.createDateTime()));
-                        try {
-                            ps.setObject(3, mapper.writeValueAsString(embedding.getMetadata()), java.sql.Types.OTHER);
-                        } catch (Exception e) {
-                            throw new SQLException("Failed to serialize metadata", e);
-                        }
-                        ps.setArray(4, conn.createArrayOf("FLOAT", embeddingArray));
+		this.jdbcClient.sql(sql).update();
+	}
 
-                    }
+	@Scheduled(fixedRateString = "${analytics.update-embeddings-interval}")
+	@Async
+	void updateEmbeddings() {
+		logger.debug("updateEmbeddings");
+		final MapSqlParameterSource params = new MapSqlParameterSource();
+		String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateEmbeddings_1), params);
+		final List<SocialMessage> messages = this.jdbcClient.sql(sql).query(SocialMessage.class).list();
+		if (!messages.isEmpty()) {
+			List<Embedding> embeddings = analyticsAiService
+				.getEmbeddingResponse(messages.stream().map(SocialMessage::text).toList())
+				.getResults();
 
-                    @Override
-                    public int getBatchSize() {
-                        return messages.size();
-                    }
-                });
-            }
-        }
-    }
+			if (messages.size() == embeddings.size()) {
+				this.jdbcTemplate.batchUpdate(loadAsString(sqlScripts.updateEmbeddings_2),
+						new BatchPreparedStatementSetter() {
 
-    @Scheduled(fixedRateString = "${analytics.update-guess-gis-info}")
-    @Async
-    void updateGuessGisInfo() {
-        logger.debug("updateGuessGisInfo");
-        final MapSqlParameterSource params = new MapSqlParameterSource();
-        String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateGisInfo_1), params);
-        final List<SocialMessage> messages = this.jdbcClient.sql(sql).query(SocialMessage.class).list();
-        List<GisInfo> gisInfos = analyticsAiService.getGisInfo(messages.stream().map(Record::toString).toList());
+							private static final ObjectMapper mapper = new ObjectMapper();
 
-        if (!gisInfos.isEmpty()) {
-            this.jdbcTemplate.batchUpdate(loadAsString(sqlScripts.updateGisInfo_2), new BatchPreparedStatementSetter() {
+							@Override
+							public void setValues(PreparedStatement ps, int i) throws SQLException {
+								SocialMessage document = messages.get(i);
+								Embedding embedding = embeddings.get(i);
 
-                @Override
-                public void setValues(PreparedStatement ps, int i) throws SQLException {
-                    GisInfo document = gisInfos.get(i);
+								Connection conn = ps.getConnection();
+								Float[] embeddingArray = IntStream.range(0, embedding.getOutput().length)
+									.mapToObj(j -> embedding.getOutput()[j])
+									.toArray(Float[]::new);
 
-                    ps.setString(1, document.messageId());
-                    ps.setTimestamp(2, Timestamp.valueOf(document.createDateTime()));
-                    ps.setInt(3, document.srid());
-                    ps.setString(4, document.gis());
-                    ps.setString(5, document.reason());
+								ps.setString(1, document.id());
+								ps.setTimestamp(2, Timestamp.valueOf(document.createDateTime()));
+								try {
+									ps.setObject(3, mapper.writeValueAsString(embedding.getMetadata()),
+											java.sql.Types.OTHER);
+								}
+								catch (Exception e) {
+									throw new SQLException("Failed to serialize metadata", e);
+								}
+								ps.setArray(4, conn.createArrayOf("FLOAT", embeddingArray));
 
-                }
+							}
 
-                @Override
-                public int getBatchSize() {
-                    return gisInfos.size();
-                }
-            });
-            logger.info("gis updated, refresh");
-            String refreshSql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.refreshTsVector), params);
-            jdbcClient.sql(refreshSql).update();
-        }
-    }
+							@Override
+							public int getBatchSize() {
+								return messages.size();
+							}
+						});
+			}
+		}
+	}
 
+	@Scheduled(fixedRateString = "${analytics.update-guess-gis-info}")
+	@Async
+	void updateGuessGisInfo() {
+		logger.debug("updateGuessGisInfo");
+		final MapSqlParameterSource params = new MapSqlParameterSource();
+		String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.updateGisInfo_1), params);
+		final List<SocialMessage> messages = this.jdbcClient.sql(sql).query(SocialMessage.class).list();
+		List<GisInfo> gisInfos = analyticsAiService.getGisInfo(messages.stream().map(Record::toString).toList());
 
-    @Scheduled(cron = "${analytics.maintenance-cron}")
-    @Async
-    void dbMaintenance() {
-        logger.debug("dbMaintenance");
-        final MapSqlParameterSource params = new MapSqlParameterSource();
-        String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.maintenance), params);
+		if (!gisInfos.isEmpty()) {
+			this.jdbcTemplate.batchUpdate(loadAsString(sqlScripts.updateGisInfo_2), new BatchPreparedStatementSetter() {
 
-        this.jdbcClient
-                .sql(sql)
-                .update();
-    }
+				@Override
+				public void setValues(PreparedStatement ps, int i) throws SQLException {
+					GisInfo document = gisInfos.get(i);
 
-    void insertSocialMessages(List<SocialMessage> socialMessages) {
-        logger.debug("insertSocialMessages");
+					ps.setString(1, document.messageId());
+					ps.setTimestamp(2, Timestamp.valueOf(document.createDateTime()));
+					ps.setInt(3, document.srid());
+					ps.setString(4, document.gis());
+					ps.setString(5, document.reason());
 
-        this.jdbcTemplate.batchUpdate(loadAsString(sqlScripts.insertSocialMessages), new BatchPreparedStatementSetter() {
+				}
 
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                SocialMessage document = socialMessages.get(i);
+				@Override
+				public int getBatchSize() {
+					return gisInfos.size();
+				}
+			});
+			logger.info("gis updated, refresh");
+			String refreshSql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.refreshTsVector), params);
+			jdbcClient.sql(refreshSql).update();
+		}
+	}
 
-                ps.setString(1, document.id());
-                ps.setString(2, document.origin());
-                ps.setString(3, document.text());
-                ps.setString(4, document.lang());
-                ps.setString(5, document.name());
-                ps.setString(6, document.url());
-                ps.setTimestamp(7, Timestamp.valueOf(document.createDateTime()));
+	@Scheduled(cron = "${analytics.maintenance-cron}")
+	@Async
+	void dbMaintenance() {
+		logger.debug("dbMaintenance");
+		final MapSqlParameterSource params = new MapSqlParameterSource();
+		String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.maintenance), params);
 
-            }
+		this.jdbcClient.sql(sql).update();
+	}
 
-            @Override
-            public int getBatchSize() {
-                return socialMessages.size();
-            }
-        });
+	void insertSocialMessages(List<SocialMessage> socialMessages) {
+		logger.debug("insertSocialMessages");
 
-    }
+		this.jdbcTemplate.batchUpdate(loadAsString(sqlScripts.insertSocialMessages),
+				new BatchPreparedStatementSetter() {
 
-    void deleteSocialMessages(List<String> socialMessagesIds) {
-        logger.debug("deleteSocialMessages");
-        final MapSqlParameterSource params = new MapSqlParameterSource();
-        String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.deleteSocialMessages), params);
-        this.jdbcClient
-                .sql(sql)
-                .param(new SqlArrayValue("VARCHAR", socialMessagesIds.toArray()))
-                .query((rs, rowNum) -> null)
-                .list();
-    }
+					@Override
+					public void setValues(PreparedStatement ps, int i) throws SQLException {
+						SocialMessage document = socialMessages.get(i);
 
-    private record SqlScripts(
-            String createVaderSql,
-            String createVaderScript,
-            String updateTsVector,
-            String refreshTsVector,
-            String updateVader,
-            String updateEmbeddings_1,
-            String updateEmbeddings_2,
-            String updateGisInfo_1,
-            String updateGisInfo_2,
-            String refreshGisInfo,
-            String insertSocialMessages,
-            String deleteSocialMessages,
-            String maintenance
-    ) {
-    }
+						ps.setString(1, document.id());
+						ps.setString(2, document.origin());
+						ps.setString(3, document.text());
+						ps.setString(4, document.lang());
+						ps.setString(5, document.name());
+						ps.setString(6, document.url());
+						ps.setTimestamp(7, Timestamp.valueOf(document.createDateTime()));
+
+					}
+
+					@Override
+					public int getBatchSize() {
+						return socialMessages.size();
+					}
+				});
+
+	}
+
+	void deleteSocialMessages(List<String> socialMessagesIds) {
+		logger.debug("deleteSocialMessages");
+		final MapSqlParameterSource params = new MapSqlParameterSource();
+		String sql = this.sqlGenerator.generate(loadSqlAsString(sqlScripts.deleteSocialMessages), params);
+		this.jdbcClient.sql(sql)
+			.param(new SqlArrayValue("VARCHAR", socialMessagesIds.toArray()))
+			.query((rs, rowNum) -> null)
+			.list();
+	}
+
+	private record SqlScripts(String createVaderSql, String createVaderScript, String updateTsVector,
+			String refreshTsVector, String updateVader, String updateEmbeddings_1, String updateEmbeddings_2,
+			String updateGisInfo_1, String updateGisInfo_2, String refreshGisInfo, String insertSocialMessages,
+			String deleteSocialMessages, String maintenance) {
+	}
 
 }

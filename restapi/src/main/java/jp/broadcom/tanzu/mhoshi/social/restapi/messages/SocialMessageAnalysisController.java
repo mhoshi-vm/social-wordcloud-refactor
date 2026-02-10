@@ -11,15 +11,16 @@ import java.util.List;
 @RequestMapping("/messages/analysis")
 class SocialMessageAnalysisController {
 
-    SocialMessageAnalysisService socialMessageAnalysisService;
+	SocialMessageAnalysisService socialMessageAnalysisService;
 
-    SocialMessageAnalysisController(SocialMessageAnalysisService socialMessageAnalysisService) {
-        this.socialMessageAnalysisService = socialMessageAnalysisService;
-    }
+	SocialMessageAnalysisController(SocialMessageAnalysisService socialMessageAnalysisService) {
+		this.socialMessageAnalysisService = socialMessageAnalysisService;
+	}
 
-    @CrossOrigin
-    @GetMapping
-    List<SocialMessageAnalysis> getAll(){
-        return socialMessageAnalysisService.listAll();
-    }
+	@CrossOrigin
+	@GetMapping
+	List<SocialMessageAnalysis> getAll() {
+		return socialMessageAnalysisService.listAll();
+	}
+
 }

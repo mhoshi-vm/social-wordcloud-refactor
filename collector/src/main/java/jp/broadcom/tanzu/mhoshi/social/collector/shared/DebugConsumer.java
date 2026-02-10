@@ -9,8 +9,9 @@ import java.util.function.Consumer;
 @Configuration
 class DebugConsumer {
 
-    @Bean
-    Consumer<List<SocialMessage>> printMessages() {
-        return message -> message.forEach(System.out::println);
-    }
+	@Bean
+	Consumer<List<SocialMessage>> printMessages() {
+		return message -> message.forEach(System.out::println);
+	}
+
 }

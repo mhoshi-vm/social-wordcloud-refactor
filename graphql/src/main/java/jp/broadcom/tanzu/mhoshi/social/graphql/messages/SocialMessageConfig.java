@@ -12,21 +12,22 @@ import java.util.List;
 @Configuration
 class SocialMessageConfig {
 
-    @Bean
-    SortStrategy sortStrategy() {
-    return new AbstractSortStrategy() {
-        @Override
-        protected List<String> getProperties(DataFetchingEnvironment environment) {
-            // Extracts the list of field names from the 'sort' argument
-            return environment.getArgument("sort");
-        }
+	@Bean
+	SortStrategy sortStrategy() {
+		return new AbstractSortStrategy() {
+			@Override
+			protected List<String> getProperties(DataFetchingEnvironment environment) {
+				// Extracts the list of field names from the 'sort' argument
+				return environment.getArgument("sort");
+			}
 
-        @Override
-        protected Sort.Direction getDirection(DataFetchingEnvironment environment) {
-            // Extracts the sort direction (e.g., ASC, DESC) from the 'direction' argument
-            return Sort.Direction.fromOptionalString(environment.getArgument("direction")).orElse(null);
-        }
-    };
-}
+			@Override
+			protected Sort.Direction getDirection(DataFetchingEnvironment environment) {
+				// Extracts the sort direction (e.g., ASC, DESC) from the 'direction'
+				// argument
+				return Sort.Direction.fromOptionalString(environment.getArgument("direction")).orElse(null);
+			}
+		};
+	}
 
 }

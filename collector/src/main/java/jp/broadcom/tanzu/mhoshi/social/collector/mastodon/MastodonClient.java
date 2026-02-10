@@ -11,10 +11,9 @@ import java.util.List;
 @HttpExchange("/api")
 interface MastodonClient {
 
-    @GetExchange(url="/v1/timelines/tag/{hashtag}", accept = "application/json")
-    List<MastodonTimelinesResponse> getMastodonTimeLineResponses(
-            @PathVariable String hashtag,
-            @RequestParam Integer limit,
-            @RequestParam(name = "since_id") String sinceId,
-            @RequestParam(name = "max_id", required = false) @Nullable String maxId);
+	@GetExchange(url = "/v1/timelines/tag/{hashtag}", accept = "application/json")
+	List<MastodonTimelinesResponse> getMastodonTimeLineResponses(@PathVariable String hashtag,
+			@RequestParam Integer limit, @RequestParam(name = "since_id") String sinceId,
+			@RequestParam(name = "max_id", required = false) @Nullable String maxId);
+
 }

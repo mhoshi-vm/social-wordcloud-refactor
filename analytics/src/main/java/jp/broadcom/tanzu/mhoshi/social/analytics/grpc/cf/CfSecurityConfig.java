@@ -21,31 +21,34 @@ import java.security.cert.X509Certificate;
 @ConditionalOnProperty(name = "spring.grpc.server.ssl.bundle")
 class CfSecurityConfig {
 
-    @Bean
-    @GlobalServerInterceptor
-    AuthenticationProcessInterceptor jwtSecurityFilterChain(GrpcSecurity grpc) throws Exception {
-        return grpc
-                .authorizeRequests(requests -> requests
-                        .methods("Delete/DeleteMessages").hasAnyAuthority("ROLE_APP")
-                        .allRequests().permitAll())
-                .authenticationExtractor(new SslContextPreAuthenticationExtractor(new CfIdentityExtractor()))
-                .preauth(Customizer.withDefaults())
-                .build();
-    }
+	@Bean
+	@GlobalServerInterceptor
+	AuthenticationProcessInterceptor jwtSecurityFilterChain(GrpcSecurity grpc) throws Exception {
+		return grpc
+			.authorizeRequests(requests -> requests.methods("Delete/DeleteMessages")
+				.hasAnyAuthority("ROLE_APP")
+				.allRequests()
+				.permitAll())
+			.authenticationExtractor(new SslContextPreAuthenticationExtractor(new CfIdentityExtractor()))
+			.preauth(Customizer.withDefaults())
+			.build();
+	}
 
-    @Bean
-    CfCertificate serverCfCertificate(SslBundles sslBundles,
-                                      @Value("${spring.grpc.server.ssl.bundle}") String bundleName,
-                                      @Value("${spring.ssl.bundle.pem.${spring.grpc.server.ssl.bundle}.key.alias}") String aliasName) throws KeyStoreException {
+	@Bean
+	CfCertificate serverCfCertificate(SslBundles sslBundles,
+			@Value("${spring.grpc.server.ssl.bundle}") String bundleName,
+			@Value("${spring.ssl.bundle.pem.${spring.grpc.server.ssl.bundle}.key.alias}") String aliasName)
+			throws KeyStoreException {
 
-        SslBundle bundle = sslBundles.getBundle(bundleName);
-        KeyStore keyStore = bundle.getStores().getKeyStore();
-        X509Certificate cert = (X509Certificate) keyStore.getCertificate(aliasName);
-        return new CfCertificate(cert);
-    }
+		SslBundle bundle = sslBundles.getBundle(bundleName);
+		KeyStore keyStore = bundle.getStores().getKeyStore();
+		X509Certificate cert = (X509Certificate) keyStore.getCertificate(aliasName);
+		return new CfCertificate(cert);
+	}
 
-    @Bean
-    public UserDetailsService userDetailsService(CfCertificate serverCertificate) {
-        return username -> CfIdentity.of(username, serverCertificate);
-    }
+	@Bean
+	public UserDetailsService userDetailsService(CfCertificate serverCertificate) {
+		return username -> CfIdentity.of(username, serverCertificate);
+	}
+
 }

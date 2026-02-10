@@ -20,129 +20,137 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AnalyticsAiServiceTest {
 
-    @Mock
-    private ChatModel chatModel;
+	@Mock
+	private ChatModel chatModel;
 
-    @Mock
-    private EmbeddingModel embeddingModel;
+	@Mock
+	private EmbeddingModel embeddingModel;
 
-    // Mocks for ChatClient fluent API
-    @Mock
-    private ChatClient.Builder chatClientBuilder;
-    @Mock
-    private ChatClient chatClient;
-    @Mock
-    private ChatClient.ChatClientRequestSpec requestSpec;
-    @Mock
-    private ChatClient.CallResponseSpec responseSpec;
+	// Mocks for ChatClient fluent API
+	@Mock
+	private ChatClient.Builder chatClientBuilder;
 
-    private AnalyticsAiService analyticsAiService;
+	@Mock
+	private ChatClient chatClient;
 
-    @BeforeEach
-    void setUp() {
-        // Mock the static creation of ChatClient
-        // Note: In a real Spring Boot test, you might use @MockBean.
-        // For pure unit testing, we need to handle how ChatClient.create(chatModel) is called.
-        // However, since ChatClient.create is static, it is hard to mock with standard Mockito.
-        // A better approach for unit testing is to refactor the constructor or use a Builder pattern in the test.
-        // Assuming we can't change the source, we will mock the behavior if we inject the ChatClient directly
-        // OR we just mock the ChatModel if ChatClient wraps it simply.
+	@Mock
+	private ChatClient.ChatClientRequestSpec requestSpec;
 
-        // *Correction*: Since `AnalyticsAiService` calls `ChatClient.create(chatModel)` inside the constructor,
-        // we cannot easily mock the resulting `ChatClient` without using Mockito-inline (static mocking)
-        // or refactoring the code to accept `ChatClient` in the constructor.
+	@Mock
+	private ChatClient.CallResponseSpec responseSpec;
 
-        // *Recommended Refactor for Testability*:
-        // Ideally, AnalyticsAiService should take ChatClient as a constructor argument.
-        // For this test, we will assume we can mock the internal ChatClient or use a partial mock.
-        // BUT, given the provided code, it calls `ChatClient.create(chatModel)`.
+	private AnalyticsAiService analyticsAiService;
 
-        // Workaround for this specific test structure without changing source:
-        // We will focus on testing the Logic assuming ChatClient works,
-        // OR we use a SpringBootTest slice to let Spring inject the ChatClient builder.
+	@BeforeEach
+	void setUp() {
+		// Mock the static creation of ChatClient
+		// Note: In a real Spring Boot test, you might use @MockBean.
+		// For pure unit testing, we need to handle how ChatClient.create(chatModel) is
+		// called.
+		// However, since ChatClient.create is static, it is hard to mock with standard
+		// Mockito.
+		// A better approach for unit testing is to refactor the constructor or use a
+		// Builder pattern in the test.
+		// Assuming we can't change the source, we will mock the behavior if we inject the
+		// ChatClient directly
+		// OR we just mock the ChatModel if ChatClient wraps it simply.
 
-        // Let's assume for this example we are writing a "Slice Test" or we refactor slightly.
-        // If we strictly cannot change code, we need to rely on the underlying ChatModel behavior
-        // or use PowerMock (discouraged).
+		// *Correction*: Since `AnalyticsAiService` calls `ChatClient.create(chatModel)`
+		// inside the constructor,
+		// we cannot easily mock the resulting `ChatClient` without using Mockito-inline
+		// (static mocking)
+		// or refactoring the code to accept `ChatClient` in the constructor.
 
-        // Strategy: Use a real ChatClient with a Mock ChatModel if possible,
-        // OR standard approach: Testing `getEmbeddingResponse` is easy. `getGisInfo` is harder.
+		// *Recommended Refactor for Testability*:
+		// Ideally, AnalyticsAiService should take ChatClient as a constructor argument.
+		// For this test, we will assume we can mock the internal ChatClient or use a
+		// partial mock.
+		// BUT, given the provided code, it calls `ChatClient.create(chatModel)`.
 
-        // Let's test `getEmbeddingResponse` first as it directly uses `embeddingModel`.
-        analyticsAiService = new AnalyticsAiService(chatModel, embeddingModel);
+		// Workaround for this specific test structure without changing source:
+		// We will focus on testing the Logic assuming ChatClient works,
+		// OR we use a SpringBootTest slice to let Spring inject the ChatClient builder.
 
-        // Reflection to inject our mock ChatClient for `getGisInfo` testing
-        // This avoids the static method issue for the purpose of this test.
-        try {
-            java.lang.reflect.Field chatClientField = AnalyticsAiService.class.getDeclaredField("chatClient");
-            chatClientField.setAccessible(true);
-            chatClientField.set(analyticsAiService, chatClient);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+		// Let's assume for this example we are writing a "Slice Test" or we refactor
+		// slightly.
+		// If we strictly cannot change code, we need to rely on the underlying ChatModel
+		// behavior
+		// or use PowerMock (discouraged).
 
-    @Test
-    void getEmbeddingResponse_ShouldReturnEmbeddings() {
-        // Arrange
-        List<String> texts = List.of("Test message 1", "Test message 2");
-        EmbeddingResponse expectedResponse = new EmbeddingResponse(
-            List.of(new Embedding(new float[]{0.1f, 0.2f}, 0))
-        );
+		// Strategy: Use a real ChatClient with a Mock ChatModel if possible,
+		// OR standard approach: Testing `getEmbeddingResponse` is easy. `getGisInfo` is
+		// harder.
 
-        when(embeddingModel.embedForResponse(texts)).thenReturn(expectedResponse);
+		// Let's test `getEmbeddingResponse` first as it directly uses `embeddingModel`.
+		analyticsAiService = new AnalyticsAiService(chatModel, embeddingModel);
 
-        // Act
-        EmbeddingResponse actualResponse = analyticsAiService.getEmbeddingResponse(texts);
+		// Reflection to inject our mock ChatClient for `getGisInfo` testing
+		// This avoids the static method issue for the purpose of this test.
+		try {
+			java.lang.reflect.Field chatClientField = AnalyticsAiService.class.getDeclaredField("chatClient");
+			chatClientField.setAccessible(true);
+			chatClientField.set(analyticsAiService, chatClient);
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-        // Assert
-        assertThat(actualResponse).isNotNull();
-        assertThat(actualResponse).isEqualTo(expectedResponse);
-        verify(embeddingModel).embedForResponse(texts);
-    }
+	@Test
+	void getEmbeddingResponse_ShouldReturnEmbeddings() {
+		// Arrange
+		List<String> texts = List.of("Test message 1", "Test message 2");
+		EmbeddingResponse expectedResponse = new EmbeddingResponse(
+				List.of(new Embedding(new float[] { 0.1f, 0.2f }, 0)));
 
-    @Test
-    void getGisInfo_ShouldReturnListOfGisInfo() {
-        // Arrange
-        String messageText = "Earthquake in Tokyo";
-        List<String> messages = List.of(messageText);
-        GisInfo expectedGis = new GisInfo(
-            "123",
-            null,
-            4326,
-            "POINT(35.68 139.76)",
-            "Located based on keyword Tokyo"
-        );
+		when(embeddingModel.embedForResponse(texts)).thenReturn(expectedResponse);
 
-        // Mocking the Fluent API chain: chatClient.prompt().user(...).call().entity(...)
-        when(chatClient.prompt()).thenReturn(requestSpec);
-        when(requestSpec.user(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
-        when(requestSpec.call()).thenReturn(responseSpec);
-        when(responseSpec.entity(GisInfo.class)).thenReturn(expectedGis);
+		// Act
+		EmbeddingResponse actualResponse = analyticsAiService.getEmbeddingResponse(texts);
 
-        // Act
-        List<GisInfo> result = analyticsAiService.getGisInfo(messages);
+		// Assert
+		assertThat(actualResponse).isNotNull();
+		assertThat(actualResponse).isEqualTo(expectedResponse);
+		verify(embeddingModel).embedForResponse(texts);
+	}
 
-        // Assert
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isEqualTo(expectedGis);
-        assertThat(result.get(0).gis()).isEqualTo("POINT(35.68 139.76)");
-    }
+	@Test
+	void getGisInfo_ShouldReturnListOfGisInfo() {
+		// Arrange
+		String messageText = "Earthquake in Tokyo";
+		List<String> messages = List.of(messageText);
+		GisInfo expectedGis = new GisInfo("123", null, 4326, "POINT(35.68 139.76)", "Located based on keyword Tokyo");
 
-    @Test
-    void getGisInfo_ShouldHandleNullResponse() {
-         // Arrange
-        List<String> messages = List.of("Unknown location");
+		// Mocking the Fluent API chain: chatClient.prompt().user(...).call().entity(...)
+		when(chatClient.prompt()).thenReturn(requestSpec);
+		when(requestSpec.user(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
+		when(requestSpec.call()).thenReturn(responseSpec);
+		when(responseSpec.entity(GisInfo.class)).thenReturn(expectedGis);
 
-        when(chatClient.prompt()).thenReturn(requestSpec);
-        when(requestSpec.user(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
-        when(requestSpec.call()).thenReturn(responseSpec);
-        when(responseSpec.entity(GisInfo.class)).thenReturn(null); // AI returned nothing
+		// Act
+		List<GisInfo> result = analyticsAiService.getGisInfo(messages);
 
-        // Act
-        List<GisInfo> result = analyticsAiService.getGisInfo(messages);
+		// Assert
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0)).isEqualTo(expectedGis);
+		assertThat(result.get(0).gis()).isEqualTo("POINT(35.68 139.76)");
+	}
 
-        // Assert
-        assertThat(result).isEmpty();
-    }
+	@Test
+	void getGisInfo_ShouldHandleNullResponse() {
+		// Arrange
+		List<String> messages = List.of("Unknown location");
+
+		when(chatClient.prompt()).thenReturn(requestSpec);
+		when(requestSpec.user(any(java.util.function.Consumer.class))).thenReturn(requestSpec);
+		when(requestSpec.call()).thenReturn(responseSpec);
+		when(responseSpec.entity(GisInfo.class)).thenReturn(null); // AI returned nothing
+
+		// Act
+		List<GisInfo> result = analyticsAiService.getGisInfo(messages);
+
+		// Assert
+		assertThat(result).isEmpty();
+	}
+
 }

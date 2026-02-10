@@ -13,17 +13,15 @@ import java.time.Duration;
 @TestConfiguration(proxyBeanMethods = false)
 class TestContainersConfiguration {
 
-    @Bean
-    @ServiceConnection
-    PostgreSQLContainer postgresContainer() {
-        return new PostgreSQLContainer(DockerImageName.parse("timescale/timescaledb-ha:pg15.15-ts2.24.0-all").asCompatibleSubstituteFor("postgres"))
-                .withEnv("POSTGRES_HOST_AUTH_METHOD", "trust")
+	@Bean
+	@ServiceConnection
+	PostgreSQLContainer postgresContainer() {
+		return new PostgreSQLContainer(DockerImageName.parse("timescale/timescaledb-ha:pg15.15-ts2.24.0-all")
+			.asCompatibleSubstituteFor("postgres")).withEnv("POSTGRES_HOST_AUTH_METHOD", "trust")
 
-                .waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*\\s", 2))
-                .withStartupCheckStrategy(
-                        new MinimumDurationRunningStartupCheckStrategy(Duration.ofSeconds(5))
-                );
+			.waitingFor(Wait.forLogMessage(".*database system is ready to accept connections.*\\s", 2))
+			.withStartupCheckStrategy(new MinimumDurationRunningStartupCheckStrategy(Duration.ofSeconds(5)));
 
-    }
+	}
 
 }

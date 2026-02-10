@@ -1,6 +1,5 @@
 package jp.broadcom.tanzu.mhoshi.social.collector.stocksapi;
 
-
 import jp.broadcom.tanzu.mhoshi.social.collector.TestContainersConfiguration;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.SocialMessage;
 import org.junit.jupiter.api.Test;
@@ -25,62 +24,62 @@ import static org.mockito.ArgumentMatchers.eq;
 @Import(TestContainersConfiguration.class)
 class StocksApiClientTest {
 
-    @MockitoBean
-    private StocksApiClient stocksApiClient;
+	@MockitoBean
+	private StocksApiClient stocksApiClient;
 
-    @Autowired
-    private Supplier<StockPriceResponse> pollStocksApi;
+	@Autowired
+	private Supplier<StockPriceResponse> pollStocksApi;
 
-    @Autowired
-    private Function<StockPriceResponse, List<SocialMessage>> convertStocksApi;
+	@Autowired
+	private Function<StockPriceResponse, List<SocialMessage>> convertStocksApi;
 
-    @Autowired
-    private StocksApiProperties stocksApiProperties;
+	@Autowired
+	private StocksApiProperties stocksApiProperties;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+	@Autowired
+	private ObjectMapper objectMapper;
 
-    @Test
-    void pollStocksApi_ShouldReturnResponse() {
-        // Arrange
-        String ticker = stocksApiProperties.ticker();
-        StockPriceResponse mockResponse = new StockPriceResponse(ticker, 150.0f, Instant.now(), 1000);
+	@Test
+	void pollStocksApi_ShouldReturnResponse() {
+		// Arrange
+		String ticker = stocksApiProperties.ticker();
+		StockPriceResponse mockResponse = new StockPriceResponse(ticker, 150.0f, Instant.now(), 1000);
 
-        Mockito.when(stocksApiClient.getStockPriceResponses(eq(ticker)))
-                .thenReturn(mockResponse);
+		Mockito.when(stocksApiClient.getStockPriceResponses(eq(ticker))).thenReturn(mockResponse);
 
-        // Act
-        StockPriceResponse result = pollStocksApi.get();
+		// Act
+		StockPriceResponse result = pollStocksApi.get();
 
-        // Assert
-        assertThat(result).isEqualTo(mockResponse);
-        assertThat(result.ticker()).isEqualTo(ticker);
-    }
+		// Assert
+		assertThat(result).isEqualTo(mockResponse);
+		assertThat(result.ticker()).isEqualTo(ticker);
+	}
 
-    @Test
-    void convertStocksApi_ShouldSerializeResponseToJson() throws JsonProcessingException {
-        // Arrange
-        Instant updated = Instant.parse("2023-10-01T10:00:00Z");
-        StockPriceResponse response = new StockPriceResponse("AAPL", 150.50f, updated, 5000);
+	@Test
+	void convertStocksApi_ShouldSerializeResponseToJson() throws JsonProcessingException {
+		// Arrange
+		Instant updated = Instant.parse("2023-10-01T10:00:00Z");
+		StockPriceResponse response = new StockPriceResponse("AAPL", 150.50f, updated, 5000);
 
-        // Act
-        List<SocialMessage> messages = convertStocksApi.apply(response);
+		// Act
+		List<SocialMessage> messages = convertStocksApi.apply(response);
 
-        // Assert
-        assertThat(messages).hasSize(1);
-        SocialMessage msg = messages.getFirst();
+		// Assert
+		assertThat(messages).hasSize(1);
+		SocialMessage msg = messages.getFirst();
 
-        // Check ID generation logic: "stocksprice:" + updated
-        String expectedId = UUID.nameUUIDFromBytes(("stocksprice:" + updated).getBytes()).toString();
-        assertThat(msg.id()).isEqualTo(expectedId);
+		// Check ID generation logic: "stocksprice:" + updated
+		String expectedId = UUID.nameUUIDFromBytes(("stocksprice:" + updated).getBytes()).toString();
+		assertThat(msg.id()).isEqualTo(expectedId);
 
-        assertThat(msg.origin()).isEqualTo("stocksprice");
+		assertThat(msg.origin()).isEqualTo("stocksprice");
 
-        // Content should be the JSON representation
-        String jsonContent = msg.text();
-        StockPriceResponse deserialized = objectMapper.readValue(jsonContent, StockPriceResponse.class);
-        assertThat(deserialized.price()).isEqualTo(150.50f);
+		// Content should be the JSON representation
+		String jsonContent = msg.text();
+		StockPriceResponse deserialized = objectMapper.readValue(jsonContent, StockPriceResponse.class);
+		assertThat(deserialized.price()).isEqualTo(150.50f);
 
-        assertThat(msg.name()).isEqualTo(stocksApiProperties.ticker());
-    }
+		assertThat(msg.name()).isEqualTo(stocksApiProperties.ticker());
+	}
+
 }

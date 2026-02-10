@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.QueryByExampleExecutor;
 import org.springframework.graphql.data.GraphQlRepository;
 
 @GraphQlRepository
-interface SocialMessageRepository extends
-        ListPagingAndSortingRepository<SocialMessage,String>,
-        QueryByExampleExecutor<SocialMessage>,
-        PagingAndSortingRepository<SocialMessage, String>{ }
+interface SocialMessageRepository extends ListPagingAndSortingRepository<SocialMessage, String>,
+		QueryByExampleExecutor<SocialMessage>, PagingAndSortingRepository<SocialMessage, String> {
+
+}

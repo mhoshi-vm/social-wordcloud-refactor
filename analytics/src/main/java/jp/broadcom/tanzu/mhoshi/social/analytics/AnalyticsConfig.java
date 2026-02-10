@@ -24,37 +24,41 @@ import java.util.function.Consumer;
 @EnableConfigurationProperties(AnalyticsConfigProperties.class)
 class AnalyticsConfig {
 
-    @Bean
-    SqlGenerator sqlGenerator() {
-        final SqlGeneratorConfig config = SqlGeneratorConfig.newInstanceWithCustomizer(c ->
-                c.getDialect().setBindVariableRenderInstance(BindVariableRender.BuiltIn.SPRING_NAMED_PARAMETER));
-        return new SqlGenerator(config);
-    }
+	@Bean
+	SqlGenerator sqlGenerator() {
+		final SqlGeneratorConfig config = SqlGeneratorConfig.newInstanceWithCustomizer(
+				c -> c.getDialect().setBindVariableRenderInstance(BindVariableRender.BuiltIn.SPRING_NAMED_PARAMETER));
+		return new SqlGenerator(config);
+	}
 
-    @Bean
-    Consumer<List<SocialMessage>> messageConsumer(AnalyticsComponent analyticsComponent) {
-        return (in) -> {
-            if (!in.isEmpty()) {
-                analyticsComponent.insertSocialMessages(in);
-                analyticsComponent.updateTsvector();
-                analyticsComponent.updateVaderSentiment();
-            }
-        };
-    }
+	@Bean
+	Consumer<List<SocialMessage>> messageConsumer(AnalyticsComponent analyticsComponent) {
+		return (in) -> {
+			if (!in.isEmpty()) {
+				analyticsComponent.insertSocialMessages(in);
+				analyticsComponent.updateTsvector();
+				analyticsComponent.updateVaderSentiment();
+			}
+		};
+	}
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) {
 
-        return http.authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/h2-console/**").permitAll() // Allow access to H2 console
-                        .requestMatchers("/actuator/**").permitAll()  // Allow access to all Actuator endpoints
-                        .anyRequest().authenticated()                 // Secure all other requests
-                )
-                .csrf(AbstractHttpConfigurer::disable // Disable CSRF for simplified H2 console access
-                )
-                .headers(headers -> headers
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable) // Enable frames for H2 console
-                ).build();
-    }
+		return http.authorizeHttpRequests(authorize -> authorize.requestMatchers("/h2-console/**")
+			.permitAll() // Allow access to H2 console
+			.requestMatchers("/actuator/**")
+			.permitAll() // Allow access to all Actuator endpoints
+			.anyRequest()
+			.authenticated() // Secure all other requests
+		).csrf(AbstractHttpConfigurer::disable // Disable CSRF for simplified H2 console
+												// access
+		).headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable) // Enable
+																									// frames
+																									// for
+																									// H2
+																									// console
+		).build();
+	}
 
 }

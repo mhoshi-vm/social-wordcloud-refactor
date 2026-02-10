@@ -6,12 +6,15 @@ import java.util.List;
 
 @Service
 class StockMetricsService {
-    StockMetricsRepository stockMetricsRepository;
-    StockMetricsService(StockMetricsRepository stockMetricsRepository) {
-        this.stockMetricsRepository = stockMetricsRepository;
-    }
 
-    List<StockMetrics> getStockMetrics() {
-        return stockMetricsRepository.getStockMetrics();
-    }
+	StockMetricsRepository stockMetricsRepository;
+
+	StockMetricsService(StockMetricsRepository stockMetricsRepository) {
+		this.stockMetricsRepository = stockMetricsRepository;
+	}
+
+	List<StockMetrics> getStockMetrics() {
+		return stockMetricsRepository.getStockMetrics();
+	}
+
 }

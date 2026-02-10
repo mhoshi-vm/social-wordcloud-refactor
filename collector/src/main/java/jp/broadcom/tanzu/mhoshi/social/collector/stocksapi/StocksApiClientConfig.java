@@ -19,46 +19,50 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Configuration
-@EnableConfigurationProperties({StocksApiProperties.class})
+@EnableConfigurationProperties({ StocksApiProperties.class })
 @ImportHttpServices(group = "stocksapi", types = StocksApiClient.class)
 class StocksApiClientConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(StocksApiClientConfig.class);
-    
+	private static final Logger logger = LoggerFactory.getLogger(StocksApiClientConfig.class);
 
-    @Bean
-    RestClientHttpServiceGroupConfigurer groupStocksApiConfigurer(StocksApiProperties stocksApiProperties) {
-        return groups -> groups.filterByName("stocksapi").forEachClient((group, builder) -> builder
-                .baseUrl(UriComponentsBuilder.newInstance()
-                        .scheme(stocksApiProperties.scheme())
-                        .host(stocksApiProperties.url())
-                        .build()
-                        .toUriString())
-                .defaultHeaders(httpHeaders -> httpHeaders.set("X-Api-Key", stocksApiProperties.apiKey()))
-                .requestInterceptor(((request, body, execution) -> {
-                    logger.info("Intercepting request: {}", request.getURI());
-                    logger.info("Headers: {}", request.getHeaders());
-                    logger.info("Method: {}", request.getMethod());
-                    return execution.execute(request, body);
-                }))
-                .build());
-    }
+	@Bean
+	RestClientHttpServiceGroupConfigurer groupStocksApiConfigurer(StocksApiProperties stocksApiProperties) {
+		return groups -> groups.filterByName("stocksapi")
+			.forEachClient((group, builder) -> builder
+				.baseUrl(UriComponentsBuilder.newInstance()
+					.scheme(stocksApiProperties.scheme())
+					.host(stocksApiProperties.url())
+					.build()
+					.toUriString())
+				.defaultHeaders(httpHeaders -> httpHeaders.set("X-Api-Key", stocksApiProperties.apiKey()))
+				.requestInterceptor(((request, body, execution) -> {
+					logger.info("Intercepting request: {}", request.getURI());
+					logger.info("Headers: {}", request.getHeaders());
+					logger.info("Method: {}", request.getMethod());
+					return execution.execute(request, body);
+				}))
+				.build());
+	}
 
-    @Bean
-    Supplier<StockPriceResponse> pollStocksApi(StocksApiClient stocksApiClient, StocksApiProperties stocksApiProperties) {
+	@Bean
+	Supplier<StockPriceResponse> pollStocksApi(StocksApiClient stocksApiClient,
+			StocksApiProperties stocksApiProperties) {
 
-        return () -> stocksApiClient.getStockPriceResponses(stocksApiProperties.ticker());
-    }
+		return () -> stocksApiClient.getStockPriceResponses(stocksApiProperties.ticker());
+	}
 
-    @Bean
-    Function<StockPriceResponse, List<SocialMessage>> convertStocksApi(StocksApiProperties socialApiProperties, StocksApiProperties stocksApiProperties, ObjectMapper objectMapper) {
-        return (in) -> {
+	@Bean
+	Function<StockPriceResponse, List<SocialMessage>> convertStocksApi(StocksApiProperties socialApiProperties,
+			StocksApiProperties stocksApiProperties, ObjectMapper objectMapper) {
+		return (in) -> {
 
-            SocialMessage socialMessage = new SocialMessage(UUID.nameUUIDFromBytes(("stocksprice:" + in.updated()).getBytes()).toString(), "stocksprice", objectMapper.writeValueAsString(in), "en", stocksApiProperties.ticker(),
-                           socialApiProperties.url() , LocalDateTime.ofInstant(in.updated(), ZoneId.of("UTC")));
+			SocialMessage socialMessage = new SocialMessage(
+					UUID.nameUUIDFromBytes(("stocksprice:" + in.updated()).getBytes()).toString(), "stocksprice",
+					objectMapper.writeValueAsString(in), "en", stocksApiProperties.ticker(), socialApiProperties.url(),
+					LocalDateTime.ofInstant(in.updated(), ZoneId.of("UTC")));
 
-            return List.of(socialMessage);
-        };
-    }
+			return List.of(socialMessage);
+		};
+	}
 
 }
