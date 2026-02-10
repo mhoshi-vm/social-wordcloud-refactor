@@ -9,5 +9,7 @@ applications:
   env:
     BUNDLE_WITHOUT: development:test
   health-check-type: process
+  routes:
+    - route: tcp.app.tas.vpsmart.aws.lespaulstudioplus.info:5140
   services:
     - greenplum

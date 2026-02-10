@@ -23,10 +23,12 @@ function initMapWidget(data) {
 
 // Called by main.js
 function refreshMapWidget(newData) {
+    console.log("aaaa");
     renderMarkers(newData);
 }
 
 function renderMarkers(data) {
+    console.log("bbbb");
     if (!mapInstance || !markersLayerGroup) return;
 
     // Clear old markers
@@ -35,16 +37,17 @@ function renderMarkers(data) {
     for (let id in markersMap) delete markersMap[id];
 
     const sentimentEmojis = { 'positive': '😀', 'neutral': '😐', 'negative': '😠' };
-
+    console.log("ccccc");
     data.forEach(item => {
-        if (!item.geom) return;
+            console.log("dddd");
+        if (!item.gisPoint) return;
 
         // Parse WKT "POINT(lng lat)"
-        const coordsRaw = item.geom.replace('POINT(', '').replace(')', '').split(' ');
+        const coordsRaw = item.gisPoint.replace('POINT(', '').replace(')', '').split(' ');
         const lat = parseFloat(coordsRaw[1]);
         const lng = parseFloat(coordsRaw[0]);
 
-        const emoji = sentimentEmojis[(item.sentiment || '').toLowerCase()] || '❓';
+        const emoji = sentimentEmojis[(item.sentimentLabel || '').toLowerCase()] || '❓';
 
         const marker = L.marker([lat, lng], {
             icon: L.divIcon({
@@ -57,7 +60,7 @@ function renderMarkers(data) {
             <div class="custom-popup">
                 <div class="popup-val"><span class="popup-label">Origin:</span> ${item.origin}</div>
                 <div class="popup-val"><span class="popup-label">URL:</span> <a href="${item.url || '#'}" target="_blank">Link</a></div>
-                <div class="popup-val"><span class="popup-label">Sentiment:</span> ${item.sentiment}</div>
+                <div class="popup-val"><span class="popup-label">Sentiment:</span> ${item.sentimentLabel}</div>
             </div>
         `;
 
@@ -68,7 +71,7 @@ function renderMarkers(data) {
         markersLayerGroup.addLayer(marker);
 
         // Store reference for search
-        markersMap[item.id] = marker;
+        markersMap[item.messageId] = marker;
     });
 }
 

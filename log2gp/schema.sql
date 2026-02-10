@@ -1,15 +1,24 @@
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
 CREATE TABLE syslog_entries (
-    -- We use a composite PK so partitioning works smoothly
-    created_at TIMESTAMP NOT NULL,
-    id BIGSERIAL,
+    created_at TIMESTAMPTZ NOT NULL, -- RFC 5424 uses high-precision timestamps
+    priority INTEGER,                -- The PRI value (Facility * 8 + Severity)
     source_host TEXT,
     app_name TEXT,
-    process_id TEXT,
-    log_content TEXT,
-    PRIMARY KEY (created_at, id)
-) PARTITION BY RANGE (created_at);
+    proc_id TEXT,
+    msg_id TEXT,                     -- RFC 5424 specific: Message ID
+    structured_data JSONB,           -- RFC 5424 specific: Key-Value pairs
+    log_content TEXT
+    -- Add constraints/primary keys as needed for your partitioning
+)
+WITH (
+    appendonly = true,
+    orientation = column,
+    compresstype = zstd,
+    compresslevel = 3
+)
+DISTRIBUTED RANDOMLY
+PARTITION BY RANGE (created_at);
 
 CREATE INDEX idx_syslog_host ON syslog_entries (source_host);
 
