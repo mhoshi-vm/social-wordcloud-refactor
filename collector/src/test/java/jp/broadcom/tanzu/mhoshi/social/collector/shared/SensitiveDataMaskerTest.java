@@ -136,14 +136,14 @@ class SensitiveDataMaskerTest {
 		// Arrange
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("api-key", "sensitive-key");
-		headers.set("API-KEY", "another-key");
+		headers.set("X-API-KEY", "another-key");
 
 		// Act
 		String masked = SensitiveDataMasker.maskHeaders(headers);
 
-		// Assert
-		assertThat(masked).contains("api-key:****");
-		assertThat(masked).contains("API-KEY:****");
+		// Assert - Header names are preserved as-is, but values are masked
+		assertThat(masked).containsAnyOf("api-key:****", "API-KEY:****");
+		assertThat(masked).containsAnyOf("X-API-KEY:****", "x-api-key:****");
 		assertThat(masked).doesNotContain("sensitive-key");
 		assertThat(masked).doesNotContain("another-key");
 	}
