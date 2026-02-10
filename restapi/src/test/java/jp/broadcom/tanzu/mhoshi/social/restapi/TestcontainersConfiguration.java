@@ -1,5 +1,6 @@
 package jp.broadcom.tanzu.mhoshi.social.restapi;
 
+import org.springframework.boot.devtools.restart.RestartScope;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,7 @@ public class TestcontainersConfiguration {
 
     @Bean
     @ServiceConnection
+    @RestartScope
     PostgreSQLContainer postgresContainer() {
         return new PostgreSQLContainer(DockerImageName.parse("postgres:latest"))
                 .withStartupCheckStrategy(
@@ -25,6 +27,7 @@ public class TestcontainersConfiguration {
 
     @Bean
     @ServiceConnection
+    @RestartScope
     RabbitMQContainer rabbitContainer() {
         return new RabbitMQContainer(DockerImageName.parse("rabbitmq:latest"));
     }
