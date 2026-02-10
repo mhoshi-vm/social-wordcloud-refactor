@@ -113,10 +113,11 @@ CREATE OR REPLACE VIEW daily_stock_metrics AS
 SELECT
     CAST(create_date_time AS DATE) AS bucket,
     'AVGO' AS ticker,
-    '500' AS avg_price
+    AVG(CAST((text::jsonb->>'price') AS FLOAT)) AS avg_price
 FROM social_message
-WHERE create_date_time > (CURRENT_TIMESTAMP - INTERVAL '1 month')
+WHERE create_date_time > (CURRENT_TIMESTAMP - INTERVAL '1 year')
   AND origin = 'stocksprice'
+  AND text::jsonb->>'ticker' = 'AVGO'
 GROUP BY bucket, ticker
 ORDER BY bucket DESC;
 
@@ -129,7 +130,7 @@ CREATE TABLE IF NOT EXISTS social_message_analysis (
     sentiment_label  VARCHAR(20),
     confidence_score REAL,
     centroid_cluster_id INTEGER,
-    gis_point        VARCHAR(100),
+    geom        VARCHAR(100),
     create_date_time TIMESTAMP NOT NULL,
     PRIMARY KEY (message_id, create_date_time)
 );

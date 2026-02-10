@@ -13,7 +13,7 @@ record SocialMessageAnalysis(
 		String sentimentLabel,
 		Integer centroidClusterId,
 		LocalDateTime createDateTime,
-		String gisPoint
+		String geom
 		// @formatter:on
 ) {
 }
