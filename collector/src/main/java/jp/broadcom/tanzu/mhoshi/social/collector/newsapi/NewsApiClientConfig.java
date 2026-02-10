@@ -3,6 +3,7 @@ package jp.broadcom.tanzu.mhoshi.social.collector.newsapi;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.CollectorType;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.OffsetStore;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.OffsetStoreRepository;
+import jp.broadcom.tanzu.mhoshi.social.collector.shared.SensitiveDataMasker;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.SocialMessage;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.*;
 import org.slf4j.Logger;
@@ -48,8 +49,8 @@ class NewsApiClientConfig {
 					.build()
 					.toUriString())
 				.requestInterceptor(((request, body, execution) -> {
-					logger.info("Intercepting request: {}", request.getURI());
-					logger.info("Headers: {}", request.getHeaders());
+					logger.info("Intercepting request - URI: {}", SensitiveDataMasker.maskUri(request.getURI()));
+					logger.info("Headers: {}", SensitiveDataMasker.maskHeaders(request.getHeaders()));
 					logger.info("Method: {}", request.getMethod());
 					return execution.execute(request, body);
 				}))

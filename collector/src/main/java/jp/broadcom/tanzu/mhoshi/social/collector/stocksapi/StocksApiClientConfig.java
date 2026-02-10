@@ -1,5 +1,6 @@
 package jp.broadcom.tanzu.mhoshi.social.collector.stocksapi;
 
+import jp.broadcom.tanzu.mhoshi.social.collector.shared.SensitiveDataMasker;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.SocialMessage;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.*;
 import org.slf4j.Logger;
@@ -36,8 +37,8 @@ class StocksApiClientConfig {
 					.toUriString())
 				.defaultHeaders(httpHeaders -> httpHeaders.set("X-Api-Key", stocksApiProperties.apiKey()))
 				.requestInterceptor(((request, body, execution) -> {
-					logger.info("Intercepting request: {}", request.getURI());
-					logger.info("Headers: {}", request.getHeaders());
+					logger.info("Intercepting request - URI: {}", SensitiveDataMasker.maskUri(request.getURI()));
+					logger.info("Headers: {}", SensitiveDataMasker.maskHeaders(request.getHeaders()));
 					logger.info("Method: {}", request.getMethod());
 					return execution.execute(request, body);
 				}))

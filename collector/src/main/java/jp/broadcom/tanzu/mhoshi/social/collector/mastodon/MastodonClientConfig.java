@@ -3,6 +3,7 @@ package jp.broadcom.tanzu.mhoshi.social.collector.mastodon;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.CollectorType;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.OffsetStore;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.OffsetStoreRepository;
+import jp.broadcom.tanzu.mhoshi.social.collector.shared.SensitiveDataMasker;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.SocialMessage;
 import jp.broadcom.tanzu.mhoshi.social.collector.shared.*;
 import org.jspecify.annotations.Nullable;
@@ -45,8 +46,8 @@ class MastodonClientConfig {
 					.toUriString())
 				.defaultHeaders(httpHeaders -> httpHeaders.set("Authorization", "Bearer " + mastodonProperties.token()))
 				.requestInterceptor(((request, body, execution) -> {
-					logger.info("Intercepting request: {}", request.getURI());
-					logger.info("Headers: {}", request.getHeaders());
+					logger.info("Intercepting request - URI: {}", SensitiveDataMasker.maskUri(request.getURI()));
+					logger.info("Headers: {}", SensitiveDataMasker.maskHeaders(request.getHeaders()));
 					logger.info("Method: {}", request.getMethod());
 					return execution.execute(request, body);
 				}))
