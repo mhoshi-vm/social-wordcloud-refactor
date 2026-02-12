@@ -10,7 +10,10 @@ async function fetchJson(path, signal) {
 export async function fetchStockData(signal) {
   const data = await fetchJson('/stocks', signal);
   return data
-    .map((d) => ({ t: d.bucket?.split('T')[0], y: Number(d.avgPrice) }))
+    .map((d) => ({
+      t: d.bucket?.split(/[T\s]/)[0], // Handle both 'T' and space separators
+      y: Number(d.avgPrice)
+    }))
     .filter((d) => d.t && !Number.isNaN(d.y))
     .sort((a, b) => new Date(a.t) - new Date(b.t));
 }
