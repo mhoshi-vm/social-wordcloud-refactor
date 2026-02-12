@@ -40,3 +40,68 @@ export async function fetchAll(signal) {
     map,
   };
 }
+
+// GraphQL API functions
+const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL || '/graphql';
+
+async function graphqlRequest(query, variables = {}) {
+  const res = await fetch(GRAPHQL_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+
+  const result = await res.json();
+
+  if (result.errors) {
+    throw new Error(result.errors[0].message);
+  }
+
+  return result.data;
+}
+
+export async function fetchSocialMessages(filters = {}) {
+  const query = `
+    query GetMessages($origin: String, $lang: String, $name: String) {
+      socialMessages(origin: $origin, lang: $lang, name: $name, first: 100) {
+        edges {
+          node {
+            id
+            origin
+            text
+            lang
+            name
+            url
+            createDateTime
+          }
+        }
+      }
+    }
+  `;
+
+  const variables = {
+    origin: filters.origin || null,
+    lang: filters.lang || null,
+    name: filters.name || null,
+  };
+
+  const data = await graphqlRequest(query, variables);
+  return data.socialMessages.edges.map((edge) => edge.node);
+}
+
+export async function deleteSocialMessages(ids) {
+  const mutation = `
+    mutation DeleteMessages($ids: [ID!]!) {
+      deleteSocialMessages(ids: $ids) {
+        message
+        deletedCount
+      }
+    }
+  `;
+
+  const variables = { ids };
+  const data = await graphqlRequest(mutation, variables);
+  return data.deleteSocialMessages;
+}
