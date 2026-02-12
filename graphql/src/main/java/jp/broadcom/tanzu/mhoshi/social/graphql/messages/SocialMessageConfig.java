@@ -38,12 +38,6 @@ class SocialMessageConfig {
 	}
 
 	@Bean
-	ManagedChannel analyticsChannel(@Value("${grpc.client.analytics.host:localhost}") String host,
-			@Value("${grpc.client.analytics.port:9090}") int port) {
-		return ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
-	}
-
-	@Bean
 	DeleteGrpc.DeleteBlockingStub deleteStub(ManagedChannel analyticsChannel) {
 		return DeleteGrpc.newBlockingStub(analyticsChannel);
 	}
