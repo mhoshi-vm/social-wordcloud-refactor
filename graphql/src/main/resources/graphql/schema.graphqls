@@ -16,6 +16,15 @@ type Query {
     socialMessage(id: ID!): SocialMessage
 }
 
+type Mutation {
+    deleteSocialMessages(ids: [ID!]!): DeleteResult
+}
+
+type DeleteResult {
+    message: String
+    deletedCount: Int
+}
+
 # --- Standard Connection Boilerplate ---
 
 type SocialMessageConnection {

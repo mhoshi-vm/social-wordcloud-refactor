@@ -1,6 +1,10 @@
 package jp.broadcom.tanzu.mhoshi.social.graphql.messages;
 
 import graphql.schema.DataFetchingEnvironment;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import jp.broadcom.tanzu.mhoshi.social.analytics.proto.DeleteGrpc;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
@@ -9,7 +13,10 @@ import org.springframework.graphql.data.query.SortStrategy;
 
 import java.util.List;
 
-@Configuration
+/**
+ * Configuration for GraphQL sort strategy and gRPC client.
+ */
+@Configuration(proxyBeanMethods = false)
 class SocialMessageConfig {
 
 	@Bean
@@ -28,6 +35,17 @@ class SocialMessageConfig {
 				return Sort.Direction.fromOptionalString(environment.getArgument("direction")).orElse(null);
 			}
 		};
+	}
+
+	@Bean
+	ManagedChannel analyticsChannel(@Value("${grpc.client.analytics.host:localhost}") String host,
+			@Value("${grpc.client.analytics.port:9090}") int port) {
+		return ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
+	}
+
+	@Bean
+	DeleteGrpc.DeleteBlockingStub deleteStub(ManagedChannel analyticsChannel) {
+		return DeleteGrpc.newBlockingStub(analyticsChannel);
 	}
 
 }
