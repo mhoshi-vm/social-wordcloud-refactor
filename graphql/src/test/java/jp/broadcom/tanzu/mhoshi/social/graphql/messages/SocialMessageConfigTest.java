@@ -1,11 +1,17 @@
 package jp.broadcom.tanzu.mhoshi.social.graphql.messages;
 
-import io.grpc.ManagedChannel;
+import graphql.schema.DataFetchingEnvironment;
 import jp.broadcom.tanzu.mhoshi.social.analytics.proto.DeleteGrpc;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Sort;
+import org.springframework.graphql.data.query.SortStrategy;
+import org.springframework.grpc.client.GrpcChannelFactory;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for SocialMessageConfig.
@@ -13,29 +19,34 @@ import static org.mockito.Mockito.mock;
 class SocialMessageConfigTest {
 
 	@Test
-	void analyticsChannel_shouldCreateManagedChannel() {
+	void sortStrategy_shouldCreateValidStrategy() {
 		// Given
 		SocialMessageConfig config = new SocialMessageConfig();
+		DataFetchingEnvironment mockEnv = mock(DataFetchingEnvironment.class);
+		when(mockEnv.getArgument("sort")).thenReturn(List.of("name", "createDateTime"));
+		when(mockEnv.getArgument("direction")).thenReturn("DESC");
 
 		// When
-		ManagedChannel channel = config.analyticsChannel("localhost", 9090);
+		SortStrategy strategy = config.sortStrategy();
+		Sort sort = strategy.extract(mockEnv);
 
 		// Then
-		assertThat(channel).isNotNull();
-		assertThat(channel.authority()).isEqualTo("localhost:9090");
-
-		// Cleanup
-		channel.shutdown();
+		assertThat(strategy).isNotNull();
+		assertThat(sort).isNotNull();
+		assertThat(sort.getOrderFor("name")).isNotNull();
+		assertThat(sort.getOrderFor("name").getDirection()).isEqualTo(Sort.Direction.DESC);
 	}
 
 	@Test
 	void deleteStub_shouldCreateBlockingStub() {
 		// Given
 		SocialMessageConfig config = new SocialMessageConfig();
-		ManagedChannel mockChannel = mock(ManagedChannel.class);
+		GrpcChannelFactory mockChannelFactory = mock(GrpcChannelFactory.class);
+		io.grpc.ManagedChannel mockChannel = mock(io.grpc.ManagedChannel.class);
+		when(mockChannelFactory.createChannel("local")).thenReturn(mockChannel);
 
 		// When
-		DeleteGrpc.DeleteBlockingStub stub = config.deleteStub(mockChannel);
+		DeleteGrpc.DeleteBlockingStub stub = config.deleteStub(mockChannelFactory);
 
 		// Then
 		assertThat(stub).isNotNull();

@@ -7,9 +7,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 class PreferIPNameResolverConfig {
 
-    @PostConstruct
-    void init() {
-        // Register the custom provider globally
-        NameResolverRegistry.getDefaultRegistry().register(new PreferIPNameResolverProvider());
-    }
+	@PostConstruct
+	void init() {
+		// Register the custom provider globally
+		NameResolverRegistry.getDefaultRegistry().register(new PreferIPNameResolverProvider());
+	}
+
 }
