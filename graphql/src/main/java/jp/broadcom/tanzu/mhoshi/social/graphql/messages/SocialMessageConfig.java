@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;
 import org.springframework.graphql.data.query.AbstractSortStrategy;
 import org.springframework.graphql.data.query.SortStrategy;
+import org.springframework.grpc.client.GrpcChannelFactory;
 
 import java.util.List;
 
@@ -38,8 +39,8 @@ class SocialMessageConfig {
 	}
 
 	@Bean
-	DeleteGrpc.DeleteBlockingStub deleteStub(ManagedChannel analyticsChannel) {
-		return DeleteGrpc.newBlockingStub(analyticsChannel);
+	DeleteGrpc.DeleteBlockingStub deleteStub(GrpcChannelFactory channels) {
+		return DeleteGrpc.newBlockingStub(channels.createChannel("local"));
 	}
 
 }

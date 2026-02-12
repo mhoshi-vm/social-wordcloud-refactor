@@ -42,7 +42,7 @@ export async function fetchAll(signal) {
 }
 
 // GraphQL API functions
-const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL || '/graphql';
+const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:8093/graphql';
 
 async function graphqlRequest(query, variables = {}) {
   const res = await fetch(GRAPHQL_URL, {

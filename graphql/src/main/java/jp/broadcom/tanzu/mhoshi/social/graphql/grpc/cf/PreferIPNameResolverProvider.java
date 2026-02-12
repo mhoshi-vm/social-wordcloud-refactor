@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.net.URI;
 
 @Component
-public class PreferIPNameResolverProvider extends NameResolverProvider {
+class PreferIPNameResolverProvider extends NameResolverProvider {
 
     @Override
     protected String getScheme() {
