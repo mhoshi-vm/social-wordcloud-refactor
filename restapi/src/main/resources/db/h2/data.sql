@@ -52,7 +52,17 @@ INSERT INTO social_message (id, origin, text, lang, name, url, create_date_time)
    ('2bb9bcfa-6b93-31f5-8b70-9563096a8804', 'CNBC', 'Description :Benchmark U.S. indexes closed lower... Content: Stock futures traded near flatline...', 'en', 'Pia Singh', 'https://www.cnbc.com/2025/12/15/stock-market-today-live-updates.html', '2025-12-15 23:07:58'),
    ('ce5b839e-dd83-3604-b2f5-dd38f3cbe466','stocksprice','{"ticker":"AVGO","price":348.58,"updated":"2026-01-02T20:59:03Z","volume":274860}', 'en', 'AVGO','api.api-ninjas.com','2026-01-03T20:59'),
    ('ce5b839e-dd83-3604-b2f5-dd38f3cbe467','stocksprice','{"ticker":"AVGO","price":347.58,"updated":"2026-01-01T20:59:02Z","volume":274860}', 'en', 'AVGO','api.api-ninjas.com','2026-01-02T20:59'),
-   ('ce5b839e-dd83-3604-b2f5-dd38f3cbe468','stocksprice','{"ticker":"AVGO","price":350.58,"updated":"2026-01-00T20:59:01Z","volume":274860}', 'en', 'AVGO','api.api-ninjas.com','2026-01-01T20:59');
+   ('ce5b839e-dd83-3604-b2f5-dd38f3cbe468','stocksprice','{"ticker":"AVGO","price":350.58,"updated":"2026-01-00T20:59:01Z","volume":274860}', 'en', 'AVGO','api.api-ninjas.com','2026-01-01T20:59'),
+   ('a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d','stocksprice','{"ticker":"AAPL","price":189.45,"updated":"2026-01-04T20:59:00Z","volume":52847320}', 'en', 'AAPL','api.api-ninjas.com','2026-01-04T20:59'),
+   ('b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e','stocksprice','{"ticker":"MSFT","price":378.92,"updated":"2026-01-04T21:00:00Z","volume":28456190}', 'en', 'MSFT','api.api-ninjas.com','2026-01-04T21:00'),
+   ('c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f','stocksprice','{"ticker":"NVDA","price":467.28,"updated":"2026-01-04T21:01:00Z","volume":43982750}', 'en', 'NVDA','api.api-ninjas.com','2026-01-04T21:01'),
+   ('d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a','stocksprice','{"ticker":"GOOGL","price":152.67,"updated":"2026-01-04T21:02:00Z","volume":31245680}', 'en', 'GOOGL','api.api-ninjas.com','2026-01-04T21:02'),
+   ('e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b','stocksprice','{"ticker":"AMZN","price":182.35,"updated":"2026-01-04T21:03:00Z","volume":38567210}', 'en', 'AMZN','api.api-ninjas.com','2026-01-04T21:03'),
+   ('f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c','stocksprice','{"ticker":"META","price":472.89,"updated":"2026-01-04T21:04:00Z","volume":24893560}', 'en', 'META','api.api-ninjas.com','2026-01-04T21:04'),
+   ('a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1d','stocksprice','{"ticker":"TSLA","price":251.44,"updated":"2026-01-04T21:05:00Z","volume":89456730}', 'en', 'TSLA','api.api-ninjas.com','2026-01-04T21:05'),
+   ('b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e','stocksprice','{"ticker":"AMD","price":142.18,"updated":"2026-01-04T21:06:00Z","volume":47821390}', 'en', 'AMD','api.api-ninjas.com','2026-01-04T21:06'),
+   ('c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3f','stocksprice','{"ticker":"ORCL","price":163.75,"updated":"2026-01-04T21:07:00Z","volume":19345620}', 'en', 'ORCL','api.api-ninjas.com','2026-01-04T21:07'),
+   ('d0e1f2a3-b4c5-4d6e-7f8a-9b0c1d2e3f4a','stocksprice','{"ticker":"AVGO","price":355.92,"updated":"2026-01-04T21:08:00Z","volume":285430}', 'en', 'AVGO','api.api-ninjas.com','2026-01-04T21:08');
 
 
 INSERT INTO message_entity_tsvector (message_id, msg_timestamp, word_vector)

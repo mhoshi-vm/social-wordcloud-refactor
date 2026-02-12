@@ -112,14 +112,15 @@ class NotificationIntegrationTest {
 	// spring.cloud.function.definition=messageConsumer
 	// spring.cloud.stream.bindings.messageConsumer-in-0.destination=notification-input
 
-    @Autowired
-    JdbcClient jdbcClient;
+	@Autowired
+	JdbcClient jdbcClient;
 
-    @AfterAll
-    void tearDown() {
-        // Code to run once after all tests in this class are done
-        jdbcClient.sql("DELETE FROM social_message").update();
-        jdbcClient.sql("DELETE FROM social_message_analysis").update();
-        // Example: close a static resource or perform database cleanup
-    }
+	@AfterAll
+	void tearDown() {
+		// Code to run once after all tests in this class are done
+		jdbcClient.sql("DELETE FROM social_message").update();
+		jdbcClient.sql("DELETE FROM social_message_analysis").update();
+		// Example: close a static resource or perform database cleanup
+	}
+
 }

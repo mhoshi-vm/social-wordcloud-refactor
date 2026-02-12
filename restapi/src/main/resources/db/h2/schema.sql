@@ -129,8 +129,7 @@ SELECT
     'AVGO' AS ticker,
     '500' AS avg_price
 FROM social_message
-WHERE create_date_time > DATEADD('MONTH', -1, CURRENT_TIMESTAMP)
-  AND origin = 'stocksprice'
+WHERE origin = 'stocksprice'
 GROUP BY bucket, ticker
 ORDER BY bucket DESC;
 
