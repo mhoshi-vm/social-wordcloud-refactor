@@ -10,8 +10,9 @@ type Query {
         first: Int,
         after: String,
         last: Int,
-        before: String
-    ): SocialMessageConnection
+        before: String,
+        offset: Int
+    ): SocialMessageResult
 
     socialMessage(id: ID!): SocialMessage
 }
@@ -27,9 +28,16 @@ type DeleteResult {
 
 # --- Standard Connection Boilerplate ---
 
+type SocialMessageResult {
+    edges: [SocialMessageEdge]
+    pageInfo: PageInfo
+    totalCount: Int
+}
+
 type SocialMessageConnection {
     edges: [SocialMessageEdge]
     pageInfo: PageInfo
+    totalCount: Int
 }
 
 enum Direction {

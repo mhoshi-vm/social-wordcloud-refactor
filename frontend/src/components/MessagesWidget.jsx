@@ -6,23 +6,40 @@ export default function MessagesWidget() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [pageInfo, setPageInfo] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [jumpToPage, setJumpToPage] = useState('');
+  const [currentCursor, setCurrentCursor] = useState(null);
+  const [cursorStack, setCursorStack] = useState([]);
   const [filters, setFilters] = useState({
     origin: '',
     lang: '',
-    name: ''
+    name: '',
+    first: 50,
   });
 
   useEffect(() => {
     loadMessages();
   }, []);
 
-  async function loadMessages() {
+  async function loadMessages(cursor = null, pageNumber = null) {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchSocialMessages(filters);
+      const { messages: data, pageInfo: info, totalCount: total } = await fetchSocialMessages({
+        ...filters,
+        after: cursor,
+      });
       setMessages(data);
+      setPageInfo(info);
+      setTotalCount(total || 0);
+      setCurrentCursor(cursor);
       setSelectedIds(new Set());
+
+      if (pageNumber !== null) {
+        setCurrentPage(pageNumber);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -32,6 +49,72 @@ export default function MessagesWidget() {
 
   function handleFilterChange(field, value) {
     setFilters(prev => ({ ...prev, [field]: value }));
+  }
+
+  function handleSearch() {
+    setCursorStack([]);
+    setCurrentCursor(null);
+    setCurrentPage(1);
+    loadMessages(null, 1);
+  }
+
+  function handleNextPage() {
+    if (pageInfo?.hasNextPage && pageInfo?.endCursor) {
+      setCursorStack(prev => [...prev, currentCursor]);
+      loadMessages(pageInfo.endCursor, currentPage + 1);
+    }
+  }
+
+  function handlePreviousPage() {
+    if (cursorStack.length > 0) {
+      const previousCursor = cursorStack[cursorStack.length - 1];
+      setCursorStack(prev => prev.slice(0, -1));
+      loadMessages(previousCursor, currentPage - 1);
+    }
+  }
+
+  async function handleJumpToPage() {
+    const pageNum = parseInt(jumpToPage, 10);
+    const totalPages = Math.ceil(totalCount / filters.first);
+
+    if (!pageNum || pageNum < 1 || pageNum > totalPages) {
+      setError(`Please enter a page number between 1 and ${totalPages}`);
+      return;
+    }
+
+    if (pageNum === currentPage) {
+      setJumpToPage('');
+      return;
+    }
+
+    setJumpToPage('');
+    setError(null);
+
+    // Calculate offset for the target page
+    const targetOffset = (pageNum - 1) * filters.first;
+
+    setLoading(true);
+    try {
+      const { messages: data, pageInfo: info, totalCount: total } = await fetchSocialMessages({
+        ...filters,
+        offset: targetOffset,
+        after: null, // Clear cursor when using offset
+      });
+
+      setMessages(data);
+      setPageInfo(info);
+      setTotalCount(total || 0);
+      setCurrentPage(pageNum);
+      setSelectedIds(new Set());
+
+      // Reset cursor stack when jumping
+      setCursorStack([]);
+      setCurrentCursor(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function toggleSelect(id) {
@@ -120,7 +203,7 @@ export default function MessagesWidget() {
           />
         </div>
 
-        <button className="btn-primary" onClick={loadMessages}>
+        <button className="btn-primary" onClick={handleSearch}>
           🔍 Search
         </button>
 
@@ -208,6 +291,52 @@ export default function MessagesWidget() {
               </tbody>
             </table>
           </div>
+
+          {pageInfo && (
+            <div className="pagination-controls">
+              <button
+                className="btn-primary"
+                onClick={handlePreviousPage}
+                disabled={cursorStack.length === 0}
+              >
+                ← Previous
+              </button>
+
+              <div className="pagination-info-group">
+                <span className="pagination-info">
+                  Page {currentPage} • Showing {((currentPage - 1) * filters.first) + 1}-{Math.min(currentPage * filters.first, totalCount)} of {totalCount} messages
+                </span>
+
+                <div className="jump-to-page">
+                  <label htmlFor="jump-page">Jump to:</label>
+                  <input
+                    id="jump-page"
+                    type="number"
+                    min="1"
+                    max={Math.ceil(totalCount / filters.first)}
+                    value={jumpToPage}
+                    onChange={(e) => setJumpToPage(e.target.value)}
+                    placeholder={`1-${Math.ceil(totalCount / filters.first)}`}
+                  />
+                  <button
+                    className="btn-primary btn-sm"
+                    onClick={handleJumpToPage}
+                    disabled={!jumpToPage}
+                  >
+                    Go
+                  </button>
+                </div>
+              </div>
+
+              <button
+                className="btn-primary"
+                onClick={handleNextPage}
+                disabled={!pageInfo.hasNextPage}
+              >
+                Next →
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

@@ -64,9 +64,28 @@ async function graphqlRequest(query, variables = {}) {
 
 export async function fetchSocialMessages(filters = {}) {
   const query = `
-    query GetMessages($origin: String, $lang: String, $name: String) {
-      socialMessages(origin: $origin, lang: $lang, name: $name, first: 100) {
+    query GetMessages(
+      $origin: String,
+      $lang: String,
+      $name: String,
+      $first: Int,
+      $after: String,
+      $offset: Int,
+      $sort: [String],
+      $direction: Direction
+    ) {
+      socialMessages(
+        origin: $origin,
+        lang: $lang,
+        name: $name,
+        first: $first,
+        after: $after,
+        offset: $offset,
+        sort: $sort,
+        direction: $direction
+      ) {
         edges {
+          cursor
           node {
             id
             origin
@@ -77,6 +96,13 @@ export async function fetchSocialMessages(filters = {}) {
             createDateTime
           }
         }
+        pageInfo {
+          hasNextPage
+          hasPreviousPage
+          startCursor
+          endCursor
+        }
+        totalCount
       }
     }
   `;
@@ -85,10 +111,19 @@ export async function fetchSocialMessages(filters = {}) {
     origin: filters.origin || null,
     lang: filters.lang || null,
     name: filters.name || null,
+    first: filters.first || 50,
+    after: filters.after || null,
+    offset: filters.offset != null ? filters.offset : null,
+    sort: filters.sort || ['createDateTime'],
+    direction: filters.direction || 'DESC',
   };
 
   const data = await graphqlRequest(query, variables);
-  return data.socialMessages.edges.map((edge) => edge.node);
+  return {
+    messages: data.socialMessages.edges.map((edge) => edge.node),
+    pageInfo: data.socialMessages.pageInfo,
+    totalCount: data.socialMessages.totalCount,
+  };
 }
 
 export async function deleteSocialMessages(ids) {

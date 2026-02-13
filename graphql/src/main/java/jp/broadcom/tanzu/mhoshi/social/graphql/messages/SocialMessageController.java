@@ -8,10 +8,11 @@ import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.graphql.data.query.ScrollSubrange;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 class SocialMessageController {
@@ -20,25 +21,38 @@ class SocialMessageController {
 
 	DeleteGrpc.DeleteBlockingStub deleteStub;
 
-	SocialMessageController(SocialMessageRepository socialMessageRepository, JdbcClient jdbcClient,
-			DeleteGrpc.DeleteBlockingStub deleteStub) {
+	SocialMessageController(SocialMessageRepository socialMessageRepository, DeleteGrpc.DeleteBlockingStub deleteStub) {
 		this.socialMessageRepository = socialMessageRepository;
 		this.deleteStub = deleteStub;
 	}
 
 	@QueryMapping
-	Page<SocialMessage> socialMessages(@Argument String origin, @Argument String lang, @Argument String name,
-			ScrollSubrange subrange, Sort sort) {
+	Map<String, Object> socialMessages(@Argument String origin, @Argument String lang, @Argument String name,
+			@Argument Integer offset, ScrollSubrange subrange, Sort sort) {
 
 		Example<SocialMessage> example = Example.of(new SocialMessage(null, origin, null, lang, name, null, null));
 
-		OffsetScrollPosition scrollPosition = (OffsetScrollPosition) subrange.position()
-			.orElse(ScrollPosition.offset());
 		int limit = subrange.count().orElse(10);
-		int offset = scrollPosition.isInitial() ? 0 : (int) (scrollPosition.getOffset() + 1);
 
-		PageRequest pageable = PageRequest.of(limit != 0 ? offset / limit : 0, limit, sort);
-		return socialMessageRepository.findAll(example, pageable);
+		// Use explicit offset if provided, otherwise default to 0
+		int actualOffset = offset != null ? offset : 0;
+
+		PageRequest pageable = PageRequest.of(limit != 0 ? actualOffset / limit : 0, limit, sort);
+		Page<SocialMessage> page = socialMessageRepository.findAll(example, pageable);
+
+		// Build edges manually
+		List<Map<String, Object>> edges = page.getContent()
+			.stream()
+			.map(msg -> Map.of("cursor", msg.id(), "node", msg))
+			.collect(Collectors.toList());
+
+		// Build pageInfo
+		Map<String, Object> pageInfo = Map.of("hasNextPage", page.hasNext(), "hasPreviousPage", page.hasPrevious(),
+				"startCursor", edges.isEmpty() ? "" : edges.getFirst().get("cursor"), "endCursor",
+				edges.isEmpty() ? "" : edges.getLast().get("cursor"));
+
+		// Build complete connection response
+		return Map.of("edges", edges, "pageInfo", pageInfo, "totalCount", page.getTotalElements());
 	}
 
 	@MutationMapping
