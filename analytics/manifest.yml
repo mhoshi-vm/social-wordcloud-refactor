@@ -3,7 +3,7 @@ applications:
   - name: analytics
     buildpacks:
       - java_buildpack_offline
-    memory: 1G
+    memory: 4G
     instances: 1
     routes:
       - route: analytics.apps.internal

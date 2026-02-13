@@ -29,7 +29,7 @@ export default function CloudWidget({ data }) {
     const maxCount = d3.max(words, (d) => d.count);
     const sizeScale = d3.scaleLinear()
       .domain([minCount, minCount === maxCount ? minCount + 1 : maxCount])
-      .range([16, 72]);
+      .range([12, 40]);
 
     cloud()
       .size([width, height])

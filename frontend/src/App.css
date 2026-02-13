@@ -233,6 +233,9 @@ main {
   display: flex;
   gap: 6px;
   margin-bottom: 12px;
+/* Add these two lines to bring buttons to the front */
+  position: relative;
+  z-index: 10;
 }
 
 button {
@@ -290,6 +293,7 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
   min-height: 200px;
+  overflow: hidden;
 }
 
 /* ---- Map Markers & Popups ---- */
