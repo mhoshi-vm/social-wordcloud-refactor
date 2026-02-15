@@ -6,7 +6,7 @@ applications:
     memory: 4G
     instances: 1
     routes:
-      - route: analytics.apps.internal
+      - route: analytics.((domain))
         protocol: http2
     path: target/analytics-0.0.1-SNAPSHOT.jar
     env:

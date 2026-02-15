@@ -18,7 +18,6 @@ record CfCertificate(
 		String organizationGuid
 		// @formatter:on
 ) {
-
 	private static final String UUID_REGEX = "([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})";
 
 	private static final Pattern APP_PATTERN = Pattern.compile("OU=app:" + UUID_REGEX, Pattern.CASE_INSENSITIVE);
@@ -37,7 +36,7 @@ record CfCertificate(
 				extractGuid(ORG_PATTERN, subject));
 	}
 
-	@Nullable
+    @Nullable
 	private static String extractGuid(Pattern pattern, String subject) {
 		Matcher matcher = pattern.matcher(subject);
 		if (matcher.find()) {
@@ -47,6 +46,8 @@ record CfCertificate(
 	}
 
 	boolean matchesSpace(CfCertificate other) {
+		if (other == null)
+			return false;
 		if (this.spaceGuid == null || this.organizationGuid == null)
 			return false;
 		return Objects.equals(this.spaceGuid, other.spaceGuid)

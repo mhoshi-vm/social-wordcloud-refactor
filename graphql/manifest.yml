@@ -9,6 +9,7 @@ applications:
     env:
       JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
       SPRING_PROFILES_ACTIVE: 'cf-greenplum'
+      SPRING_GRPC_CLIENT_CHANNELS_LOCAL_ADDRESS: static://analytics.((domain)):443
     services:
       - greenplum
       - fluentd-drain

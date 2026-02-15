@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 record CfIdentity(
-// @formatter:off
+        // @formatter:off
 		CfCertificate cfCertificate,
 		CfCertificate serverCertificate
 		// @formatter:on
