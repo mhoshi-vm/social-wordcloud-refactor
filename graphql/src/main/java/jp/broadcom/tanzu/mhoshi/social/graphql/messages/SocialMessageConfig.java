@@ -1,10 +1,7 @@
 package jp.broadcom.tanzu.mhoshi.social.graphql.messages;
 
 import graphql.schema.DataFetchingEnvironment;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import jp.broadcom.tanzu.mhoshi.social.analytics.proto.DeleteGrpc;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Sort;

@@ -1,5 +1,6 @@
 package jp.broadcom.tanzu.mhoshi.social.restapi.messages;
 
+import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +18,7 @@ class SocialMessageAnalysisController {
 	}
 
 	@GetMapping
+	@Tool(description = "Get all social message analysis data including sentiment labels, cluster IDs, and geographic locations")
 	List<SocialMessageAnalysis> getAll() {
 		return socialMessageAnalysisService.listAll();
 	}

@@ -1,5 +1,6 @@
 package jp.broadcom.tanzu.mhoshi.social.graphql.messages;
 
+import jakarta.annotation.Nullable;
 import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
@@ -7,13 +8,17 @@ import java.time.LocalDateTime;
 record SocialMessage(
 // @formatter:off
 		@Id
+        @Nullable
 		String id,
 		String origin,
-		String text,
+		@Nullable
+        String text,
 		String lang,
 		String name,
-		String url,
-		LocalDateTime createDateTime
+		@Nullable
+        String url,
+		@Nullable
+        LocalDateTime createDateTime
 		// @formatter:on
 ) {
 }

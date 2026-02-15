@@ -1,5 +1,6 @@
 package jp.broadcom.tanzu.mhoshi.social.restapi.notification;
 
+import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ class NotificationEventController {
 	}
 
 	@GetMapping()
+	@Tool(description = "Subscribe to real-time notification events via Server-Sent Events (SSE) stream")
 	SseEmitter newMessage() {
 		SseEmitter sseEmitter = new SseEmitter(-1L);
 		List<SseEmitter> emitters = notificationService.getEmitters();
